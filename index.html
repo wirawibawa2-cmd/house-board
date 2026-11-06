@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="House Board — a read-only 2D floor plan. Six team units roam the rooms.">
+<title>House Board</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0c0f'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%232EE56F'/%3E%3Crect x='11.2' y='10' width='3' height='8' rx='1.5' fill='white' transform='rotate(14 16 16)'/%3E%3Crect x='17.6' y='10' width='3' height='8' rx='1.5' fill='white' transform='rotate(14 16 16)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0c0f;
+    --bar: #101218;
+    --text: #eef1f6;
+    --muted: #8e98a8;
+    --line: rgba(255, 255, 255, 0.08);
+    --kai: #2ee56f;
+    --scout: #2f8a46;
+    --chaos: #f4f5f7;
+    --red: #f03d3d;
+    --blue: #8f52f0;
+    --sentry: #2ad4c6;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Outfit", "Avenir Next", "Segoe UI", sans-serif;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    overflow: hidden;
+  }
+
+  header {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 68px;
+    padding: 10px 20px;
+    background: linear-gradient(180deg, #14161c 0%, var(--bar) 100%);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .brand h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+  }
+
+  .brand p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 16px;
+  }
+
+  .unit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .unit strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .unit em {
+    display: block;
+    margin-top: 1px;
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .face {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  .face i,
+  .face b {
+    position: absolute;
+    top: 5px;
+    width: 3.5px;
+    height: 8px;
+    border-radius: 3px;
+    background: #fff;
+    transform: rotate(16deg);
+  }
+
+  .face i { left: 5.5px; }
+  .face b { right: 5.5px; }
+
+  .face s {
+    position: absolute;
+    right: -2px;
+    bottom: -1px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .face.kai { background: var(--kai); color: var(--kai); }
+  .face.scout { background: var(--scout); color: var(--scout); }
+  .face.chaos { background: var(--chaos); color: #6a6e76; }
+  .face.chaos i, .face.chaos b { background: #23262b; }
+  .face.red { background: var(--red); color: var(--red); }
+  .face.blue { background: var(--blue); color: var(--blue); }
+  .face.sentry { background: var(--sentry); color: var(--sentry); }
+
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .live {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+  }
+
+  .live i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--kai);
+    box-shadow: 0 0 0 0 rgba(46, 229, 111, 0.6);
+    animation: pulse 2.2s ease-out infinite;
+  }
+
+  @keyframes pulse {
+    70% { box-shadow: 0 0 0 7px rgba(46, 229, 111, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 229, 111, 0); }
+  }
+
+  button.icon {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #1a1d25;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  button.icon:hover { background: #242833; }
+  button.icon:focus-visible {
+    outline: 2px solid rgba(46, 229, 111, 0.8);
+    outline-offset: 2px;
+  }
+
+  main {
+    flex: 1;
+    min-height: 0;
+    padding: 10px 14px 14px;
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: var(--bg);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 860px) {
+    header { align-items: flex-start; flex-wrap: wrap; }
+    .legend { order: 3; width: 100%; justify-content: flex-start; }
+    .brand h1 { letter-spacing: 0.18em; font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div>
+      <h1>HOUSE BOARD</h1>
+      <p>Floor plan · read only</p>
+    </div>
+  </div>
+  <nav class="legend" aria-label="Units on the floor">
+    <div class="unit"><span class="face kai" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>Kai</strong><em data-room="Kai">Bedroom</em></span></div>
+    <div class="unit"><span class="face scout" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>Scout</strong><em data-room="Scout">Living room</em></span></div>
+    <div class="unit"><span class="face chaos" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>CHAOS</strong><em data-room="CHAOS">Kitchen</em></span></div>
+    <div class="unit"><span class="face red" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>RED</strong><em data-room="RED">Hall</em></span></div>
+    <div class="unit"><span class="face blue" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>BLUE</strong><em data-room="BLUE">Bathroom</em></span></div>
+    <div class="unit"><span class="face sentry" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>Sentry</strong><em data-room="Sentry">Outdoor pool</em></span></div>
+  </nav>
+  <div class="tools">
+    <div class="live"><i></i>LIVE</div>
+    <button class="icon" id="full" type="button" aria-label="Enter fullscreen" title="Fullscreen">
+      <svg id="full-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>
+      </svg>
+    </button>
+  </div>
+</header>
+<main>
+  <canvas id="plan" aria-label="Top-down floor plan of the house. Six units are roaming through the rooms."></canvas>
+</main>
+<p id="status" class="sr-only" aria-live="polite"></p>
+<script>
+(() => {
+  "use strict";
+
+  const WORLD_W = 1440;
+  const WORLD_H = 960;
+  const BOT_R = 22;
+  const SEPARATION = BOT_R * 2 + 6;
+
+  const BG = "#0b0c0f";
+  const WALL = "#353d4c";
+  const FLOOR = "#14161c";
+  const PATIO = "#10161a";
+  const LINE = "rgba(198, 208, 222, 0.42)";
+  const LINE_SOFT = "rgba(198, 208, 222, 0.28)";
+  const LABEL = "rgba(232, 236, 244, 0.84)";
+
+  const L = 56, T = 44, R = 1384, B = 916, IT = 14;
+  const V1 = 470, V1B = V1 + IT, V2 = 684, V2B = V2 + IT;
+  const HB = 384, HBB = HB + IT;
+  const HL = 392, HLB = HL + IT;
+  const HO = 620, HOB = HO + IT;
+
+  const ROOMS = [
+    { id: "bedroom", name: "BEDROOM", short: "Bedroom", x: L, y: T, w: V1 - L, h: HB - T },
+    { id: "bathroom", name: "BATHROOM", short: "Bathroom", x: L, y: HBB, w: V1 - L, h: HO - HBB },
+    { id: "hall", name: "HALL", short: "Hall", x: V1B, y: T, w: V2 - V1B, h: HO - T },
+    { id: "living", name: "LIVING ROOM", short: "Living room", x: V2B, y: T, w: R - V2B, h: HL - T },
+    { id: "kitchen", name: "KITCHEN", short: "Kitchen", x: V2B, y: HLB, w: R - V2B, h: HO - HLB },
+    { id: "patio", name: "OUTDOOR POOL", short: "Outdoor pool", x: L, y: HOB, w: R - L, h: B - HOB }
+  ];
+  const roomById = Object.fromEntries(ROOMS.map((room) => [room.id, room]));
+
+  const DOORS = [
+    { a: "bedroom", b: "hall", orient: "v", x: V1, y: 148, t: IT, h: 128, hinge: "end", into: "bedroom" },
+    { a: "bathroom", b: "hall", orient: "v", x: V1, y: 468, t: IT, h: 118, hinge: "start", into: "bathroom" },
+    { a: "living", b: "hall", orient: "v", x: V2, y: 128, t: IT, h: 136, hinge: "end", into: "living" },
+    { a: "kitchen", b: "hall", orient: "v", x: V2, y: 458, t: IT, h: 118, hinge: "start", into: "kitchen" },
+    { a: "living", b: "kitchen", orient: "h", x: 990, y: HL, t: IT, w: 190, opening: true },
+    { a: "hall", b: "patio", orient: "h", x: 508, y: HO, t: IT, w: 156, slider: true },
+    { a: "kitchen", b: "patio", orient: "h", x: 1104, y: HO, t: IT, w: 168, slider: true }
+  ];
+
+  const patio = roomById.patio;
+  const POOL = {
+    x: patio.x + (patio.w - 420) / 2,
+    y: patio.y + (patio.h - 86) / 2,
+    w: 420,
+    h: 86,
+    r: 20
+  };
+
+  const outer = { x: L - 16, y: T - 16, w: (R - L) + 32, h: (B - T) + 32 };
+
+  const graph = Object.fromEntries(ROOMS.map((room) => [room.id, []]));
+  for (const door of DOORS) {
+    graph[door.a].push({ to: door.b, door });
+    graph[door.b].push({ to: door.a, door });
+  }
+
+  const navRects = [];
+  for (const room of ROOMS) {
+    navRects.push({
+      x: room.x + BOT_R,
+      y: room.y + BOT_R,
+      w: room.w - BOT_R * 2,
+      h: room.h - BOT_R * 2
+    });
+  }
+  for (const door of DOORS) {
+    if (door.orient === "v") {
+      const y = door.y + BOT_R;
+      const h = door.h - BOT_R * 2;
+      navRects.push({ x: door.x - BOT_R, y, w: door.t + BOT_R * 2, h });
+    } else {
+      const x = door.x + BOT_R;
+      const w = door.w - BOT_R * 2;
+      navRects.push({ x, y: door.y - BOT_R, w, h: door.t + BOT_R * 2 });
+    }
+  }
+
+  const canvas = document.getElementById("plan");
+  const ctx = canvas.getContext("2d");
+  const roomNodes = Object.fromEntries(
+    [...document.querySelectorAll("[data-room]")].map((node) => [node.dataset.room, node])
+  );
+  const statusNode = document.getElementById("status");
+
+  const view = { s: 1, x: 0, y: 0 };
+  let hudAt = 0;
+  let statusAt = 0;
+
+  function contains(rect, x, y) {
+    return x >= rect.x && y >= rect.y && x <= rect.x + rect.w && y <= rect.y + rect.h;
+  }
+
+  function roundRectSDF(px, py, rect) {
+    const rad = rect.r;
+    const cx = rect.x + rect.w / 2;
+    const cy = rect.y + rect.h / 2;
+    const dx = Math.abs(px - cx) - (rect.w / 2 - rad);
+    const dy = Math.abs(py - cy) - (rect.h / 2 - rad);
+    return Math.min(Math.max(dx, dy), 0) + Math.hypot(Math.max(dx, 0), Math.max(dy, 0)) - rad;
+  }
+
+  function hitsPool(x, y) {
+    return roundRectSDF(x, y, POOL) < BOT_R - 0.2;
+  }
+
+  function inWalkable(x, y) {
+    if (hitsPool(x, y)) return false;
+    for (const rect of navRects) {
+      if (contains(rect, x, y)) return true;
+    }
+    return false;
+  }
+
+  function zoneAt(x, y) {
+    for (const room of ROOMS) {
+      if (contains(room, x, y)) return room.id;
+    }
+    for (const door of DOORS) {
+      if (door.orient === "v" && x >= door.x - 2 && x <= door.x + door.t + 2 && y >= door.y && y <= door.y + door.h) {
+        return door.a;
+      }
+      if (door.orient === "h" && y >= door.y - 2 && y <= door.y + door.t + 2 && x >= door.x && x <= door.x + door.w) {
+        return door.a;
+      }
+    }
+    return null;
+  }
+
+  function doorCenter(door) {
+    if (door.orient === "v") return { x: door.x + door.t / 2, y: door.y + door.h / 2 };
+    return { x: door.x + door.w / 2, y: door.y + door.t / 2 };
+  }
+
+  function route(from, to) {
+    if (!from || from === to) return [to];
+    const queue = [[from]];
+    const seen = new Set([from]);
+    while (queue.length) {
+      const path = queue.shift();
+      const here = path[path.length - 1];
+      for (const edge of graph[here]) {
+        if (seen.has(edge.to)) continue;
+        const next = path.concat(edge.to);
+        if (edge.to === to) return next;
+        seen.add(edge.to);
+        queue.push(next);
+      }
+    }
+    return [from, to];
+  }
+
+  function randomPoint(roomId) {
+    const room = roomById[roomId];
+    const spanW = Math.max(8, room.w - BOT_R * 2 - 24);
+    const spanH = Math.max(8, room.h - BOT_R * 2 - 36);
+    for (let i = 0; i < 60; i++) {
+      const x = room.x + BOT_R + 12 + Math.random() * spanW;
+      const y = room.y + BOT_R + 22 + Math.random() * spanH;
+      if (inWalkable(x, y)) return { x, y };
+    }
+    for (let y = room.y + BOT_R + 6; y <= room.y + room.h - BOT_R - 4; y += 20) {
+      for (let x = room.x + BOT_R + 6; x <= room.x + room.w - BOT_R - 4; x += 20) {
+        if (inWalkable(x, y)) return { x, y };
+      }
+    }
+    return { x: room.x + BOT_R + 10, y: room.y + BOT_R + 10 };
+  }
+
+  function waypoints(from, to, dest) {
+    const rooms = route(from, to);
+    const points = [];
+    for (let i = 0; i < rooms.length - 1; i++) {
+      const edge = graph[rooms[i]].find((item) => item.to === rooms[i + 1]);
+      if (edge) points.push(doorCenter(edge.door));
+    }
+    points.push(dest);
+    return points;
+  }
+
+  const BOTS = [
+    { name: "Kai", color: "#2ee56f", eye: "#ffffff", pip: "#2ee56f", speed: 104, wobble: 7, freq: 1.3, leave: 0.82, zone: "bedroom", x: 250, y: 230 },
+    { name: "Scout", color: "#2f8a46", eye: "#ffffff", pip: "#2f8a46", speed: 118, wobble: 6, freq: 1.5, leave: 0.8, zone: "living", x: 1020, y: 210 },
+    { name: "CHAOS", color: "#f4f5f7", eye: "#23262b", pip: "#6a6e76", speed: 146, wobble: 15, freq: 2.1, leave: 0.9, zone: "kitchen", x: 980, y: 520 },
+    { name: "RED", color: "#f03d3d", eye: "#ffffff", pip: "#f03d3d", speed: 126, wobble: 9, freq: 1.7, leave: 0.84, zone: "hall", x: 584, y: 300 },
+    { name: "BLUE", color: "#8f52f0", eye: "#ffffff", pip: "#8f52f0", speed: 92, wobble: 5, freq: 1.15, leave: 0.78, zone: "bathroom", x: 210, y: 510 },
+    { name: "Sentry", color: "#2ad4c6", eye: "#ffffff", pip: "#2ad4c6", speed: 110, wobble: 6, freq: 1.25, leave: 0.74, prefer: ["patio", "hall", "living", "kitchen"], zone: "patio", x: 280, y: 790 }
+  ];
+
+  for (const bot of BOTS) {
+    bot.vx = 0;
+    bot.vy = 0;
+    bot.heading = 0;
+    bot.wps = [];
+    bot.dwell = 0;
+    bot.stuck = 0;
+    bot.best = Infinity;
+    bot.phase = Math.random() * Math.PI * 2;
+    bot.px = bot.x;
+    bot.py = bot.y;
+  }
+
+  function chooseDestination(bot) {
+    const here = zoneAt(bot.x, bot.y) || bot.zone || "hall";
+    bot.zone = here;
+    let destRoom = here;
+    const pool = bot.prefer || ROOMS.map((room) => room.id);
+    if (Math.random() < bot.leave) {
+      destRoom = pool[Math.floor(Math.random() * pool.length)];
+      if (destRoom === here) destRoom = ROOMS[Math.floor(Math.random() * ROOMS.length)].id;
+    }
+    const dest = randomPoint(destRoom);
+    bot.wps = waypoints(here, destRoom, dest);
+    bot.best = Infinity;
+    bot.stuck = 0;
+    bot.trip = bot.speed * (0.9 + Math.random() * 0.22);
+  }
+
+  for (const bot of BOTS) {
+    if (!inWalkable(bot.x, bot.y)) {
+      const fallback = randomPoint(bot.zone);
+      bot.x = fallback.x;
+      bot.y = fallback.y;
+    }
+    bot.px = bot.x;
+    bot.py = bot.y;
+    chooseDestination(bot);
+  }
+
+  function steer(bot, dt, time) {
+    if (!bot.wps.length) {
+      bot.dwell -= dt;
+      const drag = Math.exp(-3.2 * dt);
+      bot.vx *= drag;
+      bot.vy *= drag;
+      if (bot.dwell <= 0) chooseDestination(bot);
+      return;
+    }
+
+    const wp = bot.wps[0];
+    let dx = wp.x - bot.x;
+    let dy = wp.y - bot.y;
+    let dist = Math.hypot(dx, dy);
+    if (dist < 16) {
+      bot.wps.shift();
+      bot.best = Infinity;
+      bot.stuck = 0;
+      if (!bot.wps.length) bot.dwell = 0.18 + Math.random() * 0.42;
+      return;
+    }
+
+    if (dist < bot.best - 0.7) {
+      bot.best = dist;
+      bot.stuck = 0;
+    } else {
+      bot.stuck += dt;
+    }
+    if (bot.stuck > 1.35) {
+      const home = roomById[bot.zone] || roomById.hall;
+      bot.vx = (home.x + home.w / 2 - bot.x) * 0.35;
+      bot.vy = (home.y + home.h / 2 - bot.y) * 0.35;
+      chooseDestination(bot);
+      return;
+    }
+
+    if (dist > 42) {
+      const wob = Math.sin(time * bot.freq + bot.phase) * bot.wobble;
+      const ox = dx;
+      const oy = dy;
+      dx = ox + (-oy / dist) * wob;
+      dy = oy + (ox / dist) * wob;
+      dist = Math.hypot(dx, dy) || 0.0001;
+    }
+
+    const arrive = bot.wps.length === 1 ? Math.min(1, dist / 78) : 1;
+    const speed = (bot.trip || bot.speed) * Math.max(0.28, arrive);
+    const desiredX = (dx / dist) * speed;
+    const desiredY = (dy / dist) * speed;
+    const accel = 320 * dt;
+    let sx = desiredX - bot.vx;
+    let sy = desiredY - bot.vy;
+    const sl = Math.hypot(sx, sy);
+    if (sl > accel) {
+      sx = (sx / sl) * accel;
+      sy = (sy / sl) * accel;
+    }
+    bot.vx += sx;
+    bot.vy += sy;
+    const v = Math.hypot(bot.vx, bot.vy);
+    const cap = speed * 1.05;
+    if (v > cap) {
+      bot.vx = (bot.vx / v) * cap;
+      bot.vy = (bot.vy / v) * cap;
+    }
+  }
+
+  function move(bot, dt) {
+    const nx = bot.x + bot.vx * dt;
+    const ny = bot.y + bot.vy * dt;
+    if (inWalkable(nx, ny)) {
+      bot.x = nx;
+      bot.y = ny;
+      return;
+    }
+    const xOk = inWalkable(nx, bot.y);
+    const yOk = inWalkable(bot.x, ny);
+    if (xOk && !yOk) {
+      bot.x = nx;
+      bot.vy = -bot.vy * 0.62;
+    } else if (yOk && !xOk) {
+      bot.y = ny;
+      bot.vx = -bot.vx * 0.62;
+    } else if (xOk && yOk) {
+      if (Math.abs(bot.vx) >= Math.abs(bot.vy)) {
+        bot.x = nx;
+        bot.vy = -bot.vy * 0.62;
+      } else {
+        bot.y = ny;
+        bot.vx = -bot.vx * 0.62;
+      }
+    } else {
+      bot.vx = -bot.vx * 0.5;
+      bot.vy = -bot.vy * 0.5;
+    }
+  }
+
+  function separate(a, b) {
+    let dx = b.x - a.x;
+    let dy = b.y - a.y;
+    let dist = Math.hypot(dx, dy);
+    if (dist >= SEPARATION) return;
+    if (dist < 0.001) {
+      dx = 1;
+      dy = 0;
+      dist = 1;
+    }
+    const overlap = SEPARATION - dist;
+    const nx = dx / dist;
+    const ny = dy / dist;
+    const push = overlap * 0.5;
+    const ax = a.x - nx * push;
+    const ay = a.y - ny * push;
+    const bx = b.x + nx * push;
+    const by = b.y + ny * push;
+    const aOk = inWalkable(ax, ay);
+    const bOk = inWalkable(bx, by);
+    if (aOk && bOk) {
+      a.x = ax;
+      a.y = ay;
+      b.x = bx;
+      b.y = by;
+    } else if (aOk) {
+      const full = inWalkable(a.x - nx * overlap, a.y - ny * overlap);
+      if (full) {
+        a.x -= nx * overlap;
+        a.y -= ny * overlap;
+      }
+    } else if (bOk) {
+      const full = inWalkable(b.x + nx * overlap, b.y + ny * overlap);
+      if (full) {
+        b.x += nx * overlap;
+        b.y += ny * overlap;
+      }
+    } else {
+      const tx = -ny;
+      const ty = nx;
+      if (inWalkable(a.x - tx * push, a.y - ty * push)) {
+        a.x -= tx * push;
+        a.y -= ty * push;
+      }
+      if (inWalkable(b.x + tx * push, b.y + ty * push)) {
+        b.x += tx * push;
+        b.y += ty * push;
+      }
+    }
+    const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+    if (rel < 0) {
+      const impulse = rel * 0.55;
+      a.vx += nx * impulse;
+      a.vy += ny * impulse;
+      b.vx -= nx * impulse;
+      b.vy -= ny * impulse;
+    }
+  }
+
+  function step(dt, time) {
+    for (const bot of BOTS) steer(bot, dt, time);
+    for (const bot of BOTS) move(bot, dt);
+    for (let n = 0; n < 4; n++) {
+      for (let i = 0; i < BOTS.length; i++) {
+        for (let j = i + 1; j < BOTS.length; j++) separate(BOTS[i], BOTS[j]);
+      }
+    }
+    for (const bot of BOTS) {
+      if (!inWalkable(bot.x, bot.y)) {
+        bot.x = bot.px;
+        bot.y = bot.py;
+        bot.vx *= -0.45;
+        bot.vy *= -0.45;
+      } else {
+        bot.px = bot.x;
+        bot.py = bot.y;
+      }
+      const zone = zoneAt(bot.x, bot.y);
+      if (zone) bot.zone = zone;
+      const speed = Math.hypot(bot.vx, bot.vy);
+      if (speed > 12) {
+        let face = Math.atan2(bot.vy, bot.vx) + Math.PI / 2;
+        while (face > Math.PI) face -= Math.PI * 2;
+        while (face < -Math.PI) face += Math.PI * 2;
+        face = Math.max(-0.2, Math.min(0.2, face));
+        bot.heading = lerpAngle(bot.heading, face, 1 - Math.exp(-5.5 * dt));
+      }
+    }
+  }
+
+  function lerpAngle(a, b, t) {
+    let d = b - a;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return a + d * t;
+  }
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(rect.width * dpr));
+    const h = Math.max(1, Math.round(rect.height * dpr));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    const s = Math.min(w / WORLD_W, h / WORLD_H);
+    view.s = s;
+    view.x = (w - WORLD_W * s) / 2;
+    view.y = (h - WORLD_H * s) / 2;
+  }
+
+  function pathRound(x, y, w, h, r) {
+    const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  function strokeRound(x, y, w, h, r) {
+    pathRound(x, y, w, h, r);
+    ctx.stroke();
+  }
+
+  function fillRound(x, y, w, h, r) {
+    pathRound(x, y, w, h, r);
+    ctx.fill();
+  }
+
+  function line(x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  function circle(x, y, r) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  function floorOf(id) {
+    return id === "patio" ? PATIO : FLOOR;
+  }
+
+  function drawGrid(room, step, color) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(room.x, room.y, room.w, room.h);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    const x0 = Math.ceil(room.x / step) * step;
+    const y0 = Math.ceil(room.y / step) * step;
+    for (let x = x0; x < room.x + room.w; x += step) {
+      ctx.moveTo(x, room.y);
+      ctx.lineTo(x, room.y + room.h);
+    }
+    for (let y = y0; y < room.y + room.h; y += step) {
+      ctx.moveTo(room.x, y);
+      ctx.lineTo(room.x + room.w, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawDeck(room) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(room.x, room.y, room.w, room.h);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(255,255,255,0.035)";
+    ctx.lineWidth = 1;
+    for (let y = room.y + 12; y < room.y + room.h; y += 16) {
+      ctx.moveTo(room.x, y);
+      ctx.lineTo(room.x + room.w, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawDoorBridge(door) {
+    if (door.orient === "v") {
+      const mid = door.x + door.t / 2;
+      ctx.fillStyle = floorOf(door.a);
+      ctx.fillRect(door.x - 3, door.y, mid - (door.x - 3), door.h);
+      ctx.fillStyle = floorOf(door.b);
+      ctx.fillRect(mid, door.y, door.x + door.t + 3 - mid, door.h);
+    } else {
+      const mid = door.y + door.t / 2;
+      ctx.fillStyle = floorOf(door.a);
+      ctx.fillRect(door.x, door.y - 3, door.w, mid - (door.y - 3));
+      ctx.fillStyle = floorOf(door.b);
+      ctx.fillRect(door.x, mid, door.w, door.y + door.t + 3 - mid);
+    }
+  }
+
+  function drawDoorLeaf(door) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(198, 208, 222, 0.55)";
+    ctx.lineWidth = 1.35;
+    if (door.slider) {
+      const y = door.y + door.t / 2;
+      ctx.setLineDash([8, 6]);
+      line(door.x + 10, y, door.x + door.w - 10, y);
+      ctx.setLineDash([]);
+      ctx.restore();
+      return;
+    }
+    if (door.opening) {
+      ctx.lineWidth = 1.4;
+      line(door.x, door.y - 10, door.x, door.y + door.t + 10);
+      line(door.x + door.w, door.y - 10, door.x + door.w, door.y + door.t + 10);
+      ctx.restore();
+      return;
+    }
+    const len = 62;
+    const intoWest = door.into === "bedroom" || door.into === "bathroom";
+    const hingeAtBottom = door.hinge === "end";
+    const hx = intoWest ? door.x - 1 : door.x + door.t + 1;
+    const hy = hingeAtBottom ? door.y + door.h : door.y;
+    const wallAngle = hingeAtBottom ? -Math.PI / 2 : Math.PI / 2;
+    const leafAngle = intoWest ? Math.PI : 0;
+    ctx.beginPath();
+    ctx.arc(hx, hy, len, wallAngle, leafAngle, intoWest === hingeAtBottom);
+    ctx.stroke();
+    line(hx, hy, hx + Math.cos(leafAngle) * len, hy + Math.sin(leafAngle) * len);
+    ctx.restore();
+  }
+
+  function drawWindow(x, y, w, h) {
+    ctx.fillStyle = "#1a2834";
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = "rgba(176, 214, 226, 0.55)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    ctx.beginPath();
+    if (w >= h) {
+      ctx.moveTo(x + w / 2, y);
+      ctx.lineTo(x + w / 2, y + h);
+    } else {
+      ctx.moveTo(x, y + h / 2);
+      ctx.lineTo(x + w, y + h / 2);
+    }
+    ctx.stroke();
+  }
+
+  function drawFence() {
+    ctx.save();
+    ctx.strokeStyle = "rgba(176, 186, 200, 0.28)";
+    ctx.lineWidth = 1;
+    const y0 = HOB;
+    const y1 = outer.y + outer.h;
+    const x0 = outer.x;
+    const x1 = outer.x + outer.w;
+    ctx.beginPath();
+    for (let y = y0; y < B; y += 16) {
+      ctx.moveTo(x0 + 3, y);
+      ctx.lineTo(x0 + 13, y);
+      ctx.moveTo(x1 - 13, y);
+      ctx.lineTo(x1 - 3, y);
+    }
+    for (let x = L; x < R; x += 16) {
+      ctx.moveTo(x, y1 - 13);
+      ctx.lineTo(x, y1 - 3);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFurniture() {
+    const bed = roomById.bedroom;
+    const bath = roomById.bathroom;
+    const hall = roomById.hall;
+    const liv = roomById.living;
+    const kit = roomById.kitchen;
+
+    ctx.save();
+    ctx.strokeStyle = LINE;
+    ctx.lineWidth = 1.6;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.fillStyle = "rgba(255,255,255,0.018)";
+
+    fillRound(bed.x + 78, bed.y + 168, 250, 150, 18);
+    strokeRound(bed.x + 78, bed.y + 168, 250, 150, 18);
+    strokeRound(bed.x + 124, bed.y + 28, 168, 214, 8);
+    ctx.lineWidth = 3.2;
+    strokeRound(bed.x + 124, bed.y + 28, 168, 18, 5);
+    ctx.lineWidth = 1.6;
+    strokeRound(bed.x + 140, bed.y + 54, 58, 34, 7);
+    strokeRound(bed.x + 214, bed.y + 54, 58, 34, 7);
+    line(bed.x + 124, bed.y + 132, bed.x + 292, bed.y + 132);
+    strokeRound(bed.x + 78, bed.y + 40, 34, 34, 4);
+    strokeRound(bed.x + 304, bed.y + 40, 34, 34, 4);
+    circle(bed.x + 95, bed.y + 57, 5);
+    circle(bed.x + 321, bed.y + 57, 5);
+
+    strokeRound(bath.x + 26, bath.y + 18, 236, 72, 22);
+    strokeRound(bath.x + 36, bath.y + 28, 216, 52, 16);
+    strokeRound(bath.x + 28, bath.y + 108, 46, 58, 14);
+    circle(bath.x + 51, bath.y + 132, 7);
+    strokeRound(bath.x + 24, bath.y + bath.h - 50, 210, 32, 4);
+    circle(bath.x + 78, bath.y + bath.h - 34, 9);
+    circle(bath.x + 148, bath.y + bath.h - 34, 9);
+    strokeRound(bath.x + 24, bath.y + bath.h - 62, 210, 8, 2);
+
+    fillRound(hall.x + hall.w / 2 - 16, hall.y + 36, 32, hall.h - 72, 16);
+    strokeRound(hall.x + hall.w / 2 - 16, hall.y + 36, 32, hall.h - 72, 16);
+
+    fillRound(liv.x + 150, liv.y + 78, 390, 210, 18);
+    strokeRound(liv.x + 150, liv.y + 78, 390, 210, 18);
+    strokeRound(liv.x + 250, liv.y + 18, 176, 12, 2);
+    strokeRound(liv.x + 230, liv.y + 36, 216, 20, 3);
+    strokeRound(liv.x + 120, liv.y + 248, 200, 64, 12);
+    strokeRound(liv.x + 120, liv.y + 248, 200, 18, 8);
+    line(liv.x + 186, liv.y + 266, liv.x + 186, liv.y + 312);
+    line(liv.x + 254, liv.y + 266, liv.x + 254, liv.y + 312);
+    strokeRound(liv.x + 250, liv.y + 150, 110, 52, 6);
+    strokeRound(liv.x + 78, liv.y + 250, 62, 62, 10);
+    circle(liv.x + liv.w - 48, liv.y + liv.h - 42, 16);
+    circle(liv.x + liv.w - 48, liv.y + liv.h - 42, 7);
+
+    strokeRound(kit.x + 18, kit.y + 16, 40, 72, 4);
+    strokeRound(kit.x + kit.w - 44, kit.y + 16, 28, kit.h - 62, 3);
+    const burnX = kit.x + kit.w - 30;
+    circle(burnX, kit.y + 40, 6);
+    circle(burnX, kit.y + 64, 6);
+    circle(burnX, kit.y + 88, 6);
+    circle(burnX, kit.y + 112, 6);
+    strokeRound(kit.x + 18, kit.y + kit.h - 40, 360, 24, 3);
+    circle(kit.x + 120, kit.y + kit.h - 28, 8);
+    strokeRound(kit.x + 210, kit.y + 78, 138, 62, 6);
+
+    const deckY = patio.y + patio.h / 2 - 16;
+    lounger(patio.x + 70, deckY - 46, 78, 34);
+    lounger(patio.x + 70, deckY + 28, 78, 34);
+    lounger(patio.x + patio.w - 150, deckY - 46, 78, 34);
+    lounger(patio.x + patio.w - 150, deckY + 28, 78, 34);
+    circle(patio.x + 196, patio.y + patio.h / 2, 16);
+    circle(patio.x + patio.w - 196, patio.y + patio.h / 2, 16);
+    strokeRound(patio.x + 28, patio.y + 22, 26, 26, 4);
+    strokeRound(patio.x + patio.w - 54, patio.y + 22, 26, 26, 4);
+    strokeRound(patio.x + 28, patio.y + patio.h - 48, 26, 26, 4);
+    strokeRound(patio.x + patio.w - 54, patio.y + patio.h - 48, 26, 26, 4);
+
+    ctx.restore();
+  }
+
+  function lounger(x, y, w, h) {
+    strokeRound(x, y, w, h, 7);
+    line(x + 8, y + 12, x + w - 8, y + 12);
+  }
+
+  function drawPool() {
+    ctx.save();
+    ctx.fillStyle = "#145860";
+    fillRound(POOL.x, POOL.y, POOL.w, POOL.h, POOL.r);
+    ctx.strokeStyle = "rgba(132, 236, 224, 0.85)";
+    ctx.lineWidth = 2;
+    strokeRound(POOL.x, POOL.y, POOL.w, POOL.h, POOL.r);
+    ctx.strokeStyle = "rgba(188, 246, 238, 0.35)";
+    ctx.lineWidth = 1.25;
+    strokeRound(POOL.x + 8, POOL.y + 8, POOL.w - 16, POOL.h - 16, Math.max(8, POOL.r - 8));
+    ctx.strokeStyle = "rgba(188, 246, 238, 0.28)";
+    const midY = POOL.y + POOL.h / 2;
+    ctx.setLineDash([7, 8]);
+    line(POOL.x + 28, midY, POOL.x + POOL.w - 28, midY);
+    ctx.setLineDash([]);
+    ctx.strokeStyle = "rgba(232, 250, 248, 0.7)";
+    ctx.lineWidth = 1.4;
+    const lx = POOL.x + 16;
+    const ly = POOL.y + POOL.h / 2 - 14;
+    strokeRound(lx, ly, 12, 28, 2);
+    line(lx, ly + 8, lx + 12, ly + 8);
+    line(lx, ly + 14, lx + 12, ly + 14);
+    line(lx, ly + 20, lx + 12, ly + 20);
+    ctx.restore();
+  }
+
+  function drawLabel(text, x, y) {
+    ctx.save();
+    ctx.font = "600 13px Outfit, sans-serif";
+    ctx.fillStyle = LABEL;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "0.22em";
+    ctx.fillText(text, x, y);
+    const width = Math.min(ctx.measureText(text).width, 180);
+    ctx.letterSpacing = "0px";
+    ctx.strokeStyle = "rgba(232, 236, 244, 0.32)";
+    ctx.lineWidth = 1;
+    line(x - Math.min(28, width / 2), y + 12, x + Math.min(28, width / 2), y + 12);
+    ctx.restore();
+  }
+
+  function mix(hex, target, t) {
+    const parse = (value) => {
+      const n = parseInt(value.slice(1), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    };
+    const a = parse(hex);
+    const b = parse(target);
+    const c = a.map((channel, i) => Math.round(channel + (b[i] - channel) * t));
+    return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+  }
+
+  function drawBot(bot) {
+    const r = BOT_R;
+    ctx.save();
+    ctx.translate(bot.x, bot.y + 3);
+    ctx.scale(1, 0.42);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.86, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(bot.x, bot.y);
+    ctx.rotate(bot.heading);
+    const body = ctx.createRadialGradient(-r * 0.38, -r * 0.42, r * 0.15, 0, 0, r);
+    body.addColorStop(0, mix(bot.color, "#ffffff", bot.name === "CHAOS" ? 0.35 : 0.2));
+    body.addColorStop(0.55, bot.color);
+    body.addColorStop(1, mix(bot.color, "#000000", bot.name === "CHAOS" ? 0.06 : 0.14));
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.18)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = bot.eye;
+    capsule(-5.5, -3.4, 6.7, 16.2, 0.22);
+    capsule(5.5, -3.4, 6.7, 16.2, 0.22);
+
+    const pipR = r * 0.19;
+    const pipD = r + pipR * 0.55;
+    const pipA = 0.82;
+    ctx.fillStyle = bot.pip;
+    ctx.beginPath();
+    ctx.arc(Math.cos(pipA) * pipD, Math.sin(pipA) * pipD, pipR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function capsule(x, y, w, h, rot) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    pathRound(-w / 2, -h / 2, w, h, w / 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawName(bot) {
+    ctx.save();
+    ctx.font = "600 12px Outfit, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const text = bot.name;
+    const width = ctx.measureText(text).width;
+    const x = bot.x;
+    const y = bot.y + BOT_R + 16;
+    ctx.fillStyle = "rgba(8, 10, 14, 0.62)";
+    fillRound(x - width / 2 - 6, y - 8, width + 12, 16, 8);
+    ctx.fillStyle = "#f4f6fb";
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function drawHouse() {
+    ctx.fillStyle = WALL;
+    fillRound(outer.x, outer.y, outer.w, outer.h, 10);
+
+    for (const room of ROOMS) {
+      ctx.fillStyle = floorOf(room.id);
+      ctx.fillRect(room.x, room.y, room.w, room.h);
+    }
+
+    for (const room of ROOMS) {
+      if (room.id === "patio") drawDeck(room);
+      else drawGrid(room, 28, "rgba(255,255,255,0.038)");
+    }
+
+    ctx.strokeStyle = "rgba(214, 222, 234, 0.42)";
+    ctx.lineWidth = 1.5;
+    for (const room of ROOMS) {
+      ctx.strokeRect(room.x + 0.5, room.y + 0.5, room.w - 1, room.h - 1);
+    }
+
+    for (const door of DOORS) drawDoorBridge(door);
+
+    drawWindow(150, outer.y + 4, 150, 8);
+    drawWindow(860, outer.y + 4, 210, 8);
+    drawWindow(outer.x + 4, 470, 8, 78);
+    drawWindow(R + 4, 470, 8, 90);
+
+    drawFence();
+    drawFurniture();
+    drawPool();
+
+    ctx.save();
+    ctx.strokeStyle = LINE_SOFT;
+    ctx.lineWidth = 1.25;
+    for (const door of DOORS) drawDoorLeaf(door);
+    ctx.restore();
+
+    drawLabel("BEDROOM", roomById.bedroom.x + 250, roomById.bedroom.y + 300);
+    drawLabel("BATHROOM", roomById.bathroom.x + 168, roomById.bathroom.y + 196);
+    drawLabel("HALL", roomById.hall.x + roomById.hall.w / 2, roomById.hall.y + roomById.hall.h / 2);
+    drawLabel("LIVING ROOM", roomById.living.x + 500, roomById.living.y + 292);
+    drawLabel("KITCHEN", roomById.kitchen.x + 470, roomById.kitchen.y + 70);
+    drawLabel("OUTDOOR POOL", patio.x + patio.w / 2, POOL.y - 28);
+  }
+
+  function draw() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(view.s, 0, 0, view.s, view.x, view.y);
+    drawHouse();
+    const ordered = BOTS.slice().sort((a, b) => a.y - b.y);
+    for (const bot of ordered) drawBot(bot);
+    for (const bot of ordered) drawName(bot);
+  }
+
+  function updateHud(now) {
+    if (now - hudAt < 180) return;
+    hudAt = now;
+    for (const bot of BOTS) {
+      const node = roomNodes[bot.name];
+      const room = roomById[bot.zone];
+      if (node && room && node.textContent !== room.short) node.textContent = room.short;
+    }
+    if (now - statusAt > 2800) {
+      statusAt = now;
+      statusNode.textContent = BOTS.map((bot) => {
+        const room = roomById[bot.zone];
+        return `${bot.name} is in the ${room ? room.short.toLowerCase() : "house"}`;
+      }).join(". ") + ".";
+    }
+  }
+
+  let last = performance.now();
+  let simTime = 0;
+
+  function frame(now) {
+    const dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+    simTime += dt;
+    resize();
+    step(dt, simTime);
+    draw();
+    updateHud(now);
+    requestAnimationFrame(frame);
+  }
+
+  const fullBtn = document.getElementById("full");
+  const fullIcon = document.getElementById("full-icon");
+  function setFullIcon() {
+    const on = Boolean(document.fullscreenElement);
+    fullBtn.setAttribute("aria-label", on ? "Exit fullscreen" : "Enter fullscreen");
+    fullIcon.innerHTML = on
+      ? '<path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6"/>'
+      : '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>';
+  }
+  function toggleFull() {
+    const action = !document.fullscreenElement
+      ? document.documentElement.requestFullscreen?.()
+      : document.exitFullscreen?.();
+    if (action && typeof action.catch === "function") action.catch(() => {});
+  }
+  fullBtn.addEventListener("click", toggleFull);
+  document.addEventListener("fullscreenchange", setFullIcon);
+  window.addEventListener("keydown", (event) => {
+    if (event.key.toLowerCase() === "f" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      toggleFull();
+    }
+  });
+  window.addEventListener("resize", resize);
+  new ResizeObserver(resize).observe(canvas);
+
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
