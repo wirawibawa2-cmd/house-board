@@ -4,308 +4,154 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="House Board — a read-only 2D floor plan. Six team units roam the rooms.">
+<meta name="description" content="House Board — a courtyard floor plan. Six units roam the house and meet as they pass.">
 <title>House Board</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0c0f'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%232EE56F'/%3E%3Crect x='11.2' y='10' width='3' height='8' rx='1.5' fill='white' transform='rotate(14 16 16)'/%3E%3Crect x='17.6' y='10' width='3' height='8' rx='1.5' fill='white' transform='rotate(14 16 16)'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%232EE56F'/%3E%3Crect x='11.2' y='10' width='3' height='8' rx='1.5' fill='white' transform='rotate(14 16 16)'/%3E%3Crect x='17.6' y='10' width='3' height='8' rx='1.5' fill='white' transform='rotate(14 16 16)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0b0c0f;
-    --bar: #101218;
-    --text: #eef1f6;
-    --muted: #8e98a8;
-    --line: rgba(255, 255, 255, 0.08);
+    --bg: #000;
+    --text: #f4f6f8;
+    --muted: #8e949e;
     --kai: #2ee56f;
     --scout: #2f8a46;
-    --chaos: #f4f5f7;
+    --chaos: #f5f6f8;
     --red: #f03d3d;
     --blue: #8f52f0;
     --sentry: #2ad4c6;
   }
-
   * { box-sizing: border-box; }
-
   html, body {
     margin: 0;
     height: 100%;
-    background: var(--bg);
+    background: #000;
     color: var(--text);
-    font-family: "Outfit", "Avenir Next", "Segoe UI", sans-serif;
+    font-family: Outfit, "Avenir Next", "Segoe UI", sans-serif;
   }
-
-  body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    overflow: hidden;
+  body { display: flex; flex-direction: column; overflow: hidden; }
+  header { flex: none; padding: 16px 28px 0; }
+  .top { display: flex; align-items: flex-start; justify-content: space-between; }
+  .brand h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0.16em; }
+  .brand p { margin: 6px 0 0; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: 0.28em; }
+  .rule { height: 1px; margin-top: 14px; background: rgba(255,255,255,0.22); }
+  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 26px; padding: 12px 0 8px; }
+  .unit { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+  .face { position: relative; width: 26px; height: 26px; border-radius: 50%; flex: none; }
+  .face i, .face b {
+    position: absolute; top: 6px; width: 4px; height: 10px; border-radius: 4px;
+    background: #fff; transform: rotate(16deg);
   }
-
-  header {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    min-height: 68px;
-    padding: 10px 20px;
-    background: linear-gradient(180deg, #14161c 0%, var(--bar) 100%);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .brand h1 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: 0.26em;
-  }
-
-  .brand p {
-    margin: 3px 0 0;
-    color: var(--muted);
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 16px;
-  }
-
-  .unit {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .unit strong {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-  }
-
-  .unit em {
-    display: block;
-    margin-top: 1px;
-    font-style: normal;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .face {
-    position: relative;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    flex: none;
-  }
-
-  .face i,
-  .face b {
-    position: absolute;
-    top: 5px;
-    width: 3.5px;
-    height: 8px;
-    border-radius: 3px;
-    background: #fff;
-    transform: rotate(16deg);
-  }
-
-  .face i { left: 5.5px; }
-  .face b { right: 5.5px; }
-
-  .face s {
-    position: absolute;
-    right: -2px;
-    bottom: -1px;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-
+  .face i { left: 6.5px; }
+  .face b { right: 6.5px; }
+  .face s { position: absolute; right: -2px; bottom: -1px; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
   .face.kai { background: var(--kai); color: var(--kai); }
   .face.scout { background: var(--scout); color: var(--scout); }
-  .face.chaos { background: var(--chaos); color: #6a6e76; }
+  .face.chaos { background: var(--chaos); color: #6b6f78; }
   .face.chaos i, .face.chaos b { background: #23262b; }
   .face.red { background: var(--red); color: var(--red); }
   .face.blue { background: var(--blue); color: var(--blue); }
   .face.sentry { background: var(--sentry); color: var(--sentry); }
-
-  .tools {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .live {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 32px;
-    padding: 0 10px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-  }
-
-  .live i {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--kai);
-    box-shadow: 0 0 0 0 rgba(46, 229, 111, 0.6);
-    animation: pulse 2.2s ease-out infinite;
-  }
-
-  @keyframes pulse {
-    70% { box-shadow: 0 0 0 7px rgba(46, 229, 111, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(46, 229, 111, 0); }
-  }
-
   button.icon {
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border-radius: 10px;
-    border: 1px solid var(--line);
-    background: #1a1d25;
-    color: var(--text);
-    cursor: pointer;
+    width: 36px; height: 36px; display: grid; place-items: center;
+    border: 0; background: transparent; color: #f3f5f8; cursor: pointer; padding: 0;
   }
-
-  button.icon:hover { background: #242833; }
-  button.icon:focus-visible {
-    outline: 2px solid rgba(46, 229, 111, 0.8);
-    outline-offset: 2px;
-  }
-
-  main {
-    flex: 1;
-    min-height: 0;
-    padding: 10px 14px 14px;
-  }
-
-  canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: var(--bg);
-  }
-
+  button.icon:focus-visible { outline: 2px solid rgba(46,229,111,0.85); outline-offset: 2px; }
+  main { flex: 1; min-height: 0; padding: 0 10px 10px; }
+  canvas { width: 100%; height: 100%; display: block; background: #000; }
   .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
   }
-
   @media (max-width: 860px) {
-    header { align-items: flex-start; flex-wrap: wrap; }
-    .legend { order: 3; width: 100%; justify-content: flex-start; }
-    .brand h1 { letter-spacing: 0.18em; font-size: 16px; }
+    header { padding: 12px 14px 0; }
+    .brand h1 { font-size: 16px; letter-spacing: 0.12em; }
+    .legend { justify-content: flex-start; gap: 8px 14px; }
+    .unit { font-size: 12px; }
+    .face { width: 20px; height: 20px; }
   }
 </style>
 </head>
 <body>
 <header>
-  <div class="brand">
-    <div>
+  <div class="top">
+    <div class="brand">
       <h1>HOUSE BOARD</h1>
-      <p>Floor plan · read only</p>
+      <p>LARGE COURTYARD</p>
     </div>
-  </div>
-  <nav class="legend" aria-label="Units on the floor">
-    <div class="unit"><span class="face kai" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>Kai</strong><em data-room="Kai">Bedroom</em></span></div>
-    <div class="unit"><span class="face scout" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>Scout</strong><em data-room="Scout">Living room</em></span></div>
-    <div class="unit"><span class="face chaos" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>CHAOS</strong><em data-room="CHAOS">Kitchen</em></span></div>
-    <div class="unit"><span class="face red" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>RED</strong><em data-room="RED">Hall</em></span></div>
-    <div class="unit"><span class="face blue" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>BLUE</strong><em data-room="BLUE">Bathroom</em></span></div>
-    <div class="unit"><span class="face sentry" aria-hidden="true"><i></i><b></b><s></s></span><span><strong>Sentry</strong><em data-room="Sentry">Outdoor pool</em></span></div>
-  </nav>
-  <div class="tools">
-    <div class="live"><i></i>LIVE</div>
     <button class="icon" id="full" type="button" aria-label="Enter fullscreen" title="Fullscreen">
-      <svg id="full-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+      <svg id="full-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
         <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>
       </svg>
     </button>
   </div>
+  <div class="rule"></div>
+  <nav class="legend" aria-label="Units">
+    <span class="unit"><span class="face kai" aria-hidden="true"><i></i><b></b><s></s></span>Kai</span>
+    <span class="unit"><span class="face scout" aria-hidden="true"><i></i><b></b><s></s></span>Scout</span>
+    <span class="unit"><span class="face chaos" aria-hidden="true"><i></i><b></b><s></s></span>CHAOS</span>
+    <span class="unit"><span class="face red" aria-hidden="true"><i></i><b></b><s></s></span>RED</span>
+    <span class="unit"><span class="face blue" aria-hidden="true"><i></i><b></b><s></s></span>BLUE</span>
+    <span class="unit"><span class="face sentry" aria-hidden="true"><i></i><b></b><s></s></span>Sentry</span>
+  </nav>
 </header>
 <main>
-  <canvas id="plan" aria-label="Top-down floor plan of the house. Six units are roaming through the rooms."></canvas>
+  <canvas id="plan" aria-label="Courtyard house floor plan. Six units roam through the rooms and across the deck."></canvas>
 </main>
 <p id="status" class="sr-only" aria-live="polite"></p>
 <script>
 (() => {
   "use strict";
 
-  const WORLD_W = 1440;
-  const WORLD_H = 960;
-  const BOT_R = 22;
+  const WORLD_W = 1680;
+  const WORLD_H = 1040;
+  const BOT_R = 20;
   const SEPARATION = BOT_R * 2 + 6;
 
-  const BG = "#0b0c0f";
-  const WALL = "#353d4c";
-  const FLOOR = "#14161c";
-  const PATIO = "#10161a";
-  const LINE = "rgba(198, 208, 222, 0.42)";
-  const LINE_SOFT = "rgba(198, 208, 222, 0.28)";
-  const LABEL = "rgba(232, 236, 244, 0.84)";
-
-  const L = 56, T = 44, R = 1384, B = 916, IT = 14;
-  const V1 = 470, V1B = V1 + IT, V2 = 684, V2B = V2 + IT;
-  const HB = 384, HBB = HB + IT;
-  const HL = 392, HLB = HL + IT;
-  const HO = 620, HOB = HO + IT;
+  const X0 = 36, XE = 214, X1 = 430, X2 = 1250, X3 = 1644;
+  const Y0 = 24, YW = 146, Y1 = 336, YM = 568, YG = 758, YK = 488, Y2 = 812, Y3 = 1014;
 
   const ROOMS = [
-    { id: "bedroom", name: "BEDROOM", short: "Bedroom", x: L, y: T, w: V1 - L, h: HB - T },
-    { id: "bathroom", name: "BATHROOM", short: "Bathroom", x: L, y: HBB, w: V1 - L, h: HO - HBB },
-    { id: "hall", name: "HALL", short: "Hall", x: V1B, y: T, w: V2 - V1B, h: HO - T },
-    { id: "living", name: "LIVING ROOM", short: "Living room", x: V2B, y: T, w: R - V2B, h: HL - T },
-    { id: "kitchen", name: "KITCHEN", short: "Kitchen", x: V2B, y: HLB, w: R - V2B, h: HO - HLB },
-    { id: "patio", name: "OUTDOOR POOL", short: "Outdoor pool", x: L, y: HOB, w: R - L, h: B - HOB }
+    { id: "living", x: X1, y: Y0, w: X2 - X1, h: Y1 - Y0 },
+    { id: "master", x: X0, y: YW, w: X1 - X0, h: YM - YW },
+    { id: "ensuite", x: X0, y: YM, w: XE - X0, h: YG - YM },
+    { id: "guest", x: XE, y: YM, w: X1 - XE, h: YG - YM },
+    { id: "bath", x: X0, y: YG, w: X1 - X0, h: Y3 - YG },
+    { id: "kitchen", x: X2, y: YW, w: X3 - X2, h: YK - YW },
+    { id: "study", x: X2, y: YK, w: X3 - X2, h: Y3 - YK },
+    { id: "court", x: X1, y: Y1, w: X2 - X1, h: Y2 - Y1 },
+    { id: "lounge", x: X1, y: Y2, w: X2 - X1, h: Y3 - Y2 }
   ];
   const roomById = Object.fromEntries(ROOMS.map((room) => [room.id, room]));
 
   const DOORS = [
-    { a: "bedroom", b: "hall", orient: "v", x: V1, y: 148, t: IT, h: 128, hinge: "end", into: "bedroom" },
-    { a: "bathroom", b: "hall", orient: "v", x: V1, y: 468, t: IT, h: 118, hinge: "start", into: "bathroom" },
-    { a: "living", b: "hall", orient: "v", x: V2, y: 128, t: IT, h: 136, hinge: "end", into: "living" },
-    { a: "kitchen", b: "hall", orient: "v", x: V2, y: 458, t: IT, h: 118, hinge: "start", into: "kitchen" },
-    { a: "living", b: "kitchen", orient: "h", x: 990, y: HL, t: IT, w: 190, opening: true },
-    { a: "hall", b: "patio", orient: "h", x: 508, y: HO, t: IT, w: 156, slider: true },
-    { a: "kitchen", b: "patio", orient: "h", x: 1104, y: HO, t: IT, w: 168, slider: true }
+    { a: "master", b: "living", orient: "v", x: X1, y: 188, h: 112 },
+    { a: "master", b: "court", orient: "v", x: X1, y: 390, h: 140 },
+    { a: "master", b: "ensuite", orient: "h", y: YM, x: 78, w: 110 },
+    { a: "master", b: "guest", orient: "h", y: YM, x: 268, w: 120 },
+    { a: "ensuite", b: "guest", orient: "v", x: XE, y: 600, h: 110 },
+    { a: "ensuite", b: "bath", orient: "h", y: YG, x: 70, w: 110 },
+    { a: "guest", b: "bath", orient: "h", y: YG, x: 270, w: 120 },
+    { a: "guest", b: "court", orient: "v", x: X1, y: 600, h: 120 },
+    { a: "bath", b: "lounge", orient: "v", x: X1, y: 860, h: 112 },
+    { a: "kitchen", b: "living", orient: "v", x: X2, y: 188, h: 112 },
+    { a: "kitchen", b: "court", orient: "v", x: X2, y: 360, h: 108 },
+    { a: "kitchen", b: "study", orient: "h", y: YK, x: 1368, w: 140 },
+    { a: "study", b: "court", orient: "v", x: X2, y: 560, h: 150 },
+    { a: "study", b: "lounge", orient: "v", x: X2, y: 868, h: 112 },
+    { a: "living", b: "court", orient: "h", y: Y1, x: 620, w: 430 },
+    { a: "court", b: "lounge", orient: "h", y: Y2, x: 650, w: 390 }
   ];
 
-  const patio = roomById.patio;
+  const court = roomById.court;
   const POOL = {
-    x: patio.x + (patio.w - 420) / 2,
-    y: patio.y + (patio.h - 86) / 2,
-    w: 420,
-    h: 86,
-    r: 20
+    x: court.x + Math.round((court.w - 400) / 2),
+    y: court.y + Math.round((court.h - 196) / 2),
+    w: 400,
+    h: 196,
+    r: 0
   };
-
-  const outer = { x: L - 16, y: T - 16, w: (R - L) + 32, h: (B - T) + 32 };
 
   const graph = Object.fromEntries(ROOMS.map((room) => [room.id, []]));
   for (const door of DOORS) {
@@ -315,42 +161,47 @@
 
   const navRects = [];
   for (const room of ROOMS) {
-    navRects.push({
-      x: room.x + BOT_R,
-      y: room.y + BOT_R,
-      w: room.w - BOT_R * 2,
-      h: room.h - BOT_R * 2
-    });
+    navRects.push({ x: room.x + BOT_R, y: room.y + BOT_R, w: room.w - BOT_R * 2, h: room.h - BOT_R * 2 });
   }
   for (const door of DOORS) {
     if (door.orient === "v") {
-      const y = door.y + BOT_R;
-      const h = door.h - BOT_R * 2;
-      navRects.push({ x: door.x - BOT_R, y, w: door.t + BOT_R * 2, h });
+      navRects.push({ x: door.x - BOT_R, y: door.y + BOT_R, w: BOT_R * 2, h: door.h - BOT_R * 2 });
     } else {
-      const x = door.x + BOT_R;
-      const w = door.w - BOT_R * 2;
-      navRects.push({ x, y: door.y - BOT_R, w, h: door.t + BOT_R * 2 });
+      navRects.push({ x: door.x + BOT_R, y: door.y - BOT_R, w: door.w - BOT_R * 2, h: BOT_R * 2 });
     }
+  }
+
+  const BLOCKS = [];
+  {
+    const master = roomById.master;
+    const guest = roomById.guest;
+    const bath = roomById.bath;
+    const liv = roomById.living;
+    const bedW = 214;
+    const bedH = 156;
+    BLOCKS.push({
+      x: master.x + (master.w - bedW) / 2,
+      y: master.y + 78,
+      w: bedW,
+      h: bedH,
+      r: 6
+    });
+    BLOCKS.push({ x: guest.x + 36, y: guest.y + 24, w: 100, h: 72, r: 4 });
+    BLOCKS.push({ kind: "ellipse", x: bath.x + 108, y: bath.y + 118, rx: 46, ry: 68 });
+    BLOCKS.push({ x: liv.x + 604, y: liv.y + 72, w: 84, h: 156, r: 4 });
   }
 
   const canvas = document.getElementById("plan");
   const ctx = canvas.getContext("2d");
-  const roomNodes = Object.fromEntries(
-    [...document.querySelectorAll("[data-room]")].map((node) => [node.dataset.room, node])
-  );
   const statusNode = document.getElementById("status");
-
   const view = { s: 1, x: 0, y: 0 };
-  let hudAt = 0;
-  let statusAt = 0;
 
   function contains(rect, x, y) {
     return x >= rect.x && y >= rect.y && x <= rect.x + rect.w && y <= rect.y + rect.h;
   }
 
-  function roundRectSDF(px, py, rect) {
-    const rad = rect.r;
+  function sdf(px, py, rect) {
+    const rad = rect.r || 0;
     const cx = rect.x + rect.w / 2;
     const cy = rect.y + rect.h / 2;
     const dx = Math.abs(px - cx) - (rect.w / 2 - rad);
@@ -359,35 +210,41 @@
   }
 
   function hitsPool(x, y) {
-    return roundRectSDF(x, y, POOL) < BOT_R - 0.2;
+    return sdf(x, y, POOL) < BOT_R - 0.2;
+  }
+
+  function hitsBlock(x, y) {
+    for (const block of BLOCKS) {
+      if (block.kind === "ellipse") {
+        const dx = (x - block.x) / (block.rx + BOT_R);
+        const dy = (y - block.y) / (block.ry + BOT_R);
+        if (dx * dx + dy * dy < 1) return true;
+      } else if (sdf(x, y, block) < BOT_R - 0.2) return true;
+    }
+    return false;
   }
 
   function inWalkable(x, y) {
-    if (hitsPool(x, y)) return false;
-    for (const rect of navRects) {
-      if (contains(rect, x, y)) return true;
-    }
+    if (hitsPool(x, y) || hitsBlock(x, y)) return false;
+    for (const rect of navRects) if (contains(rect, x, y)) return true;
     return false;
   }
 
   function zoneAt(x, y) {
     for (const room of ROOMS) {
-      if (contains(room, x, y)) return room.id;
+      if (x >= room.x && y >= room.y && x < room.x + room.w && y < room.y + room.h) return room.id;
     }
     for (const door of DOORS) {
-      if (door.orient === "v" && x >= door.x - 2 && x <= door.x + door.t + 2 && y >= door.y && y <= door.y + door.h) {
-        return door.a;
-      }
-      if (door.orient === "h" && y >= door.y - 2 && y <= door.y + door.t + 2 && x >= door.x && x <= door.x + door.w) {
-        return door.a;
-      }
+      if (door.orient === "v" && Math.abs(x - door.x) <= BOT_R && y >= door.y && y <= door.y + door.h) return door.a;
+      if (door.orient === "h" && Math.abs(y - door.y) <= BOT_R && x >= door.x && x <= door.x + door.w) return door.a;
     }
     return null;
   }
 
   function doorCenter(door) {
-    if (door.orient === "v") return { x: door.x + door.t / 2, y: door.y + door.h / 2 };
-    return { x: door.x + door.w / 2, y: door.y + door.t / 2 };
+    return door.orient === "v"
+      ? { x: door.x, y: door.y + door.h / 2 }
+      : { x: door.x + door.w / 2, y: door.y };
   }
 
   function route(from, to) {
@@ -397,7 +254,7 @@
     while (queue.length) {
       const path = queue.shift();
       const here = path[path.length - 1];
-      for (const edge of graph[here]) {
+      for (const edge of graph[here] || []) {
         if (seen.has(edge.to)) continue;
         const next = path.concat(edge.to);
         if (edge.to === to) return next;
@@ -410,42 +267,74 @@
 
   function randomPoint(roomId) {
     const room = roomById[roomId];
-    const spanW = Math.max(8, room.w - BOT_R * 2 - 24);
-    const spanH = Math.max(8, room.h - BOT_R * 2 - 36);
-    for (let i = 0; i < 60; i++) {
-      const x = room.x + BOT_R + 12 + Math.random() * spanW;
-      const y = room.y + BOT_R + 22 + Math.random() * spanH;
+    for (let i = 0; i < 80; i++) {
+      const x = room.x + BOT_R + 10 + Math.random() * Math.max(8, room.w - BOT_R * 2 - 20);
+      const y = room.y + BOT_R + 10 + Math.random() * Math.max(8, room.h - BOT_R * 2 - 20);
       if (inWalkable(x, y)) return { x, y };
     }
-    for (let y = room.y + BOT_R + 6; y <= room.y + room.h - BOT_R - 4; y += 20) {
-      for (let x = room.x + BOT_R + 6; x <= room.x + room.w - BOT_R - 4; x += 20) {
+    for (let y = room.y + BOT_R + 6; y <= room.y + room.h - BOT_R - 4; y += 16) {
+      for (let x = room.x + BOT_R + 6; x <= room.x + room.w - BOT_R - 4; x += 16) {
         if (inWalkable(x, y)) return { x, y };
       }
     }
-    return { x: room.x + BOT_R + 10, y: room.y + BOT_R + 10 };
+    return { x: room.x + room.w / 2, y: room.y + room.h / 2 };
   }
 
   function waypoints(from, to, dest) {
     const rooms = route(from, to);
     const points = [];
     for (let i = 0; i < rooms.length - 1; i++) {
-      const edge = graph[rooms[i]].find((item) => item.to === rooms[i + 1]);
+      const edge = (graph[rooms[i]] || []).find((item) => item.to === rooms[i + 1]);
       if (edge) points.push(doorCenter(edge.door));
     }
     points.push(dest);
     return points;
   }
 
+  function segmentHitsPool(x1, y1, x2, y2) {
+    for (let i = 1; i < 10; i++) {
+      const t = i / 10;
+      if (hitsPool(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t)) return true;
+    }
+    return false;
+  }
+
+  function deckSides() {
+    return [
+      { x: POOL.x - 64, y: POOL.y + POOL.h / 2 },
+      { x: POOL.x + POOL.w + 64, y: POOL.y + POOL.h / 2 },
+      { x: POOL.x + POOL.w / 2, y: POOL.y - 46 },
+      { x: POOL.x + POOL.w / 2, y: POOL.y + POOL.h + 46 }
+    ].filter((spot) => inWalkable(spot.x, spot.y));
+  }
+
   const BOTS = [
-    { name: "Kai", color: "#2ee56f", eye: "#ffffff", pip: "#2ee56f", speed: 104, wobble: 7, freq: 1.3, leave: 0.82, zone: "bedroom", x: 250, y: 230 },
-    { name: "Scout", color: "#2f8a46", eye: "#ffffff", pip: "#2f8a46", speed: 118, wobble: 6, freq: 1.5, leave: 0.8, zone: "living", x: 1020, y: 210 },
-    { name: "CHAOS", color: "#f4f5f7", eye: "#23262b", pip: "#6a6e76", speed: 146, wobble: 15, freq: 2.1, leave: 0.9, zone: "kitchen", x: 980, y: 520 },
-    { name: "RED", color: "#f03d3d", eye: "#ffffff", pip: "#f03d3d", speed: 126, wobble: 9, freq: 1.7, leave: 0.84, zone: "hall", x: 584, y: 300 },
-    { name: "BLUE", color: "#8f52f0", eye: "#ffffff", pip: "#8f52f0", speed: 92, wobble: 5, freq: 1.15, leave: 0.78, zone: "bathroom", x: 210, y: 510 },
-    { name: "Sentry", color: "#2ad4c6", eye: "#ffffff", pip: "#2ad4c6", speed: 110, wobble: 6, freq: 1.25, leave: 0.74, prefer: ["patio", "hall", "living", "kitchen"], zone: "patio", x: 280, y: 790 }
+    { name: "Kai", color: "#2ee56f", eye: "#ffffff", pip: "#2ee56f", speed: 96, wobble: 6, freq: 1.3, x: POOL.x - 70, y: POOL.y + 34 },
+    { name: "Scout", color: "#2f8a46", eye: "#ffffff", pip: "#2f8a46", speed: 104, wobble: 5, freq: 1.5, x: 980, y: 930 },
+    { name: "CHAOS", color: "#f5f6f8", eye: "#23262b", pip: "#6a6e76", speed: 116, wobble: 11, freq: 2, x: 720, y: 924 },
+    { name: "RED", color: "#f03d3d", eye: "#ffffff", pip: "#f03d3d", speed: 108, wobble: 7, freq: 1.7, x: POOL.x - 66, y: POOL.y + POOL.h - 26 },
+    { name: "BLUE", color: "#8f52f0", eye: "#ffffff", pip: "#8f52f0", speed: 90, wobble: 4, freq: 1.15, x: POOL.x + POOL.w + 70, y: POOL.y + 36 },
+    { name: "Sentry", color: "#2ad4c6", eye: "#ffffff", pip: "#2ad4c6", speed: 100, wobble: 5, freq: 1.25, x: POOL.x + POOL.w + 66, y: POOL.y + POOL.h - 28 }
   ];
 
-  for (const bot of BOTS) {
+  function chooseDestination(bot, prefer) {
+    const here = zoneAt(bot.x, bot.y) || bot.zone || "lounge";
+    bot.zone = here;
+    const ids = ROOMS.map((room) => room.id);
+    let dest = prefer || here;
+    if (!prefer && Math.random() < 0.86) {
+      const bag = ids.concat(["court", "lounge", "living"]);
+      dest = bag[Math.floor(Math.random() * bag.length)];
+      if (dest === here) dest = ids[Math.floor(Math.random() * ids.length)];
+    }
+    bot.wps = waypoints(here, dest, randomPoint(dest));
+    bot.best = Infinity;
+    bot.stuck = 0;
+    bot.dwell = 0;
+    bot.trip = bot.speed * (0.92 + Math.random() * 0.16);
+  }
+
+  BOTS.forEach((bot, index) => {
     bot.vx = 0;
     bot.vy = 0;
     bot.heading = 0;
@@ -453,88 +342,205 @@
     bot.dwell = 0;
     bot.stuck = 0;
     bot.best = Infinity;
-    bot.phase = Math.random() * Math.PI * 2;
+    bot.phase = index * 1.3;
+    bot.mode = "roam";
+    bot.partner = null;
+    bot.extra = null;
+    bot.leader = false;
+    bot.modeTime = 0;
+    bot.cooldown = 0.2;
+    bot.lastSocial = -index * 1.6;
+    bot.pulse = 0;
+    bot.repath = 0;
+    bot.sideSign = index % 2 === 0 ? 1 : -1;
+    bot.joined = false;
+    if (!inWalkable(bot.x, bot.y)) {
+      const spot = randomPoint("court");
+      bot.x = spot.x;
+      bot.y = spot.y;
+    }
     bot.px = bot.x;
     bot.py = bot.y;
+    bot.zone = zoneAt(bot.x, bot.y) || "court";
+    chooseDestination(bot);
+  });
+
+  function groupOf(bot) {
+    const out = [];
+    const seen = new Set();
+    const queue = [bot];
+    while (queue.length) {
+      const cur = queue.pop();
+      if (!cur || seen.has(cur) || cur.mode === "roam") continue;
+      seen.add(cur);
+      out.push(cur);
+      queue.push(cur.partner, cur.extra);
+    }
+    return out.length ? out : [bot];
   }
 
-  function chooseDestination(bot) {
-    const here = zoneAt(bot.x, bot.y) || bot.zone || "hall";
-    bot.zone = here;
-    let destRoom = here;
-    const pool = bot.prefer || ROOMS.map((room) => room.id);
-    if (Math.random() < bot.leave) {
-      destRoom = pool[Math.floor(Math.random() * pool.length)];
-      if (destRoom === here) destRoom = ROOMS[Math.floor(Math.random() * ROOMS.length)].id;
+  function releaseRoam(bot, time, destId) {
+    bot.mode = "roam";
+    bot.partner = null;
+    bot.extra = null;
+    bot.leader = false;
+    bot.joined = false;
+    bot.cooldown = 1.3 + Math.random() * 1.2;
+    bot.lastSocial = time;
+    chooseDestination(bot, destId);
+  }
+
+  function beginCluster(a, b, third, time) {
+    const dur = 1.15 + Math.random() * 0.4;
+    for (const bot of [a, b, third]) {
+      bot.mode = "cluster";
+      bot.leader = false;
+      bot.modeTime = dur;
+      bot.wps = [];
+      bot.pulse = 1;
+      bot.lastSocial = time;
+      bot.stuck = 0;
     }
-    const dest = randomPoint(destRoom);
-    bot.wps = waypoints(here, destRoom, dest);
+    a.partner = b;
+    b.partner = a;
+    third.partner = a;
+    a.extra = third;
+    b.extra = third;
+    third.extra = b;
+  }
+
+  function beginGreet(a, b, time) {
+    const dur = 0.85 + Math.random() * 0.5;
+    for (const bot of [a, b]) {
+      bot.mode = "greet";
+      bot.leader = false;
+      bot.extra = null;
+      bot.joined = false;
+      bot.modeTime = dur;
+      bot.wps = [];
+      bot.pulse = 1;
+      bot.lastSocial = time;
+      bot.stuck = 0;
+    }
+    a.partner = b;
+    b.partner = a;
+    const third = BOTS.find((bot) => (
+      bot !== a && bot !== b && bot.mode === "roam" && bot.cooldown <= 0
+      && Math.hypot(bot.x - a.x, bot.y - a.y) < 200
+      && Math.hypot(bot.x - b.x, bot.y - b.y) < 220
+    ));
+    if (third && Math.random() < 0.72) beginCluster(a, b, third, time);
+  }
+
+  function beginPair(a, b, time) {
+    const dur = 3.5 + Math.random() * 1.7;
+    a.mode = b.mode = "pair";
+    a.partner = b;
+    b.partner = a;
+    a.extra = b.extra = null;
+    a.leader = true;
+    b.leader = false;
+    a.modeTime = b.modeTime = dur;
+    a.sideSign = 1;
+    b.sideSign = -1;
+    const here = zoneAt(a.x, a.y) || a.zone || "court";
+    const options = ROOMS.map((room) => room.id).filter((id) => id !== here);
+    const dest = options[Math.floor(Math.random() * options.length)];
+    a.zone = here;
+    a.wps = waypoints(here, dest, randomPoint(dest));
+    a.best = Infinity;
+    a.stuck = 0;
+    b.wps = [];
+    a.lastSocial = b.lastSocial = time;
+  }
+
+  function beginSeek(a, b, time) {
+    a.mode = "seek";
+    a.partner = b;
+    a.extra = null;
+    a.leader = false;
+    a.modeTime = 7;
+    a.repath = 0;
+    a.wps = [];
+    a.lastSocial = time;
+  }
+
+  function endSocial(bot, time) {
+    const members = groupOf(bot).filter((member) => member.mode !== "roam");
+    if (!members.length) return;
+    if (members.length === 2 && members.every((member) => member.mode === "greet") && Math.random() < 0.7) {
+      beginPair(members[0], members[1], time);
+      return;
+    }
+    const rooms = ROOMS.map((room) => room.id).sort(() => Math.random() - 0.5);
+    members.forEach((member, index) => releaseRoam(member, time, rooms[index % rooms.length]));
+  }
+
+  function approachPoint(seeker, target) {
+    const dx = target.x - seeker.x;
+    const dy = target.y - seeker.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const x = target.x - (dx / dist) * (SEPARATION + 16);
+    const y = target.y - (dy / dist) * (SEPARATION + 16);
+    if (inWalkable(x, y)) return { x, y };
+    const sides = deckSides().sort((p, q) => Math.hypot(p.x - seeker.x, p.y - seeker.y) - Math.hypot(q.x - seeker.x, q.y - seeker.y));
+    return sides[0] || { x: target.x, y: target.y };
+  }
+
+  function refreshSeek(bot) {
+    const target = bot.partner;
+    if (!target) return;
+    const here = zoneAt(bot.x, bot.y) || bot.zone || "lounge";
+    const there = zoneAt(target.x, target.y) || target.zone || here;
+    bot.zone = here;
+    const spot = approachPoint(bot, target);
+    let points = here === there && !segmentHitsPool(bot.x, bot.y, spot.x, spot.y)
+      ? [spot]
+      : waypoints(here, there, spot);
+    if (points[0] && segmentHitsPool(bot.x, bot.y, points[0].x, points[0].y)) {
+      const side = deckSides().sort((p, q) => Math.hypot(p.x - bot.x, p.y - bot.y) - Math.hypot(q.x - bot.x, q.y - bot.y))[0];
+      if (side) points = [side].concat(points);
+    }
+    bot.wps = points;
     bot.best = Infinity;
     bot.stuck = 0;
-    bot.trip = bot.speed * (0.9 + Math.random() * 0.22);
   }
 
-  for (const bot of BOTS) {
-    if (!inWalkable(bot.x, bot.y)) {
-      const fallback = randomPoint(bot.zone);
-      bot.x = fallback.x;
-      bot.y = fallback.y;
+  let noticeAt = 0.4;
+  let seekAt = 0.8;
+
+  function socialDirector(time) {
+    if (time >= noticeAt) {
+      noticeAt = time + 0.28;
+      const busy = BOTS.some((bot) => bot.mode === "greet" || bot.mode === "cluster" || bot.mode === "pair");
+      if (!busy) {
+        for (let i = 0; i < BOTS.length; i++) {
+          for (let j = i + 1; j < BOTS.length; j++) {
+            const a = BOTS[i];
+            const b = BOTS[j];
+            if (a.mode !== "roam" || b.mode !== "roam" || a.cooldown > 0 || b.cooldown > 0) continue;
+            const dist = Math.hypot(a.x - b.x, a.y - b.y);
+            const reach = a.zone && a.zone === b.zone ? 136 : 104;
+            if (dist < reach && dist > SEPARATION - 2) {
+              beginGreet(a, b, time);
+              return;
+            }
+          }
+        }
+      }
     }
-    bot.px = bot.x;
-    bot.py = bot.y;
-    chooseDestination(bot);
+    if (time < seekAt) return;
+    seekAt = time + 1.2 + Math.random() * 0.8;
+    if (BOTS.some((bot) => bot.mode !== "roam")) return;
+    const idle = BOTS.filter((bot) => bot.cooldown <= 0).sort((a, b) => a.lastSocial - b.lastSocial);
+    if (idle.length < 2) return;
+    beginSeek(idle[0], idle[1 + Math.floor(Math.random() * (idle.length - 1))] || idle[1], time);
   }
 
-  function steer(bot, dt, time) {
-    if (!bot.wps.length) {
-      bot.dwell -= dt;
-      const drag = Math.exp(-3.2 * dt);
-      bot.vx *= drag;
-      bot.vy *= drag;
-      if (bot.dwell <= 0) chooseDestination(bot);
-      return;
-    }
-
-    const wp = bot.wps[0];
-    let dx = wp.x - bot.x;
-    let dy = wp.y - bot.y;
-    let dist = Math.hypot(dx, dy);
-    if (dist < 16) {
-      bot.wps.shift();
-      bot.best = Infinity;
-      bot.stuck = 0;
-      if (!bot.wps.length) bot.dwell = 0.18 + Math.random() * 0.42;
-      return;
-    }
-
-    if (dist < bot.best - 0.7) {
-      bot.best = dist;
-      bot.stuck = 0;
-    } else {
-      bot.stuck += dt;
-    }
-    if (bot.stuck > 1.35) {
-      const home = roomById[bot.zone] || roomById.hall;
-      bot.vx = (home.x + home.w / 2 - bot.x) * 0.35;
-      bot.vy = (home.y + home.h / 2 - bot.y) * 0.35;
-      chooseDestination(bot);
-      return;
-    }
-
-    if (dist > 42) {
-      const wob = Math.sin(time * bot.freq + bot.phase) * bot.wobble;
-      const ox = dx;
-      const oy = dy;
-      dx = ox + (-oy / dist) * wob;
-      dy = oy + (ox / dist) * wob;
-      dist = Math.hypot(dx, dy) || 0.0001;
-    }
-
-    const arrive = bot.wps.length === 1 ? Math.min(1, dist / 78) : 1;
-    const speed = (bot.trip || bot.speed) * Math.max(0.28, arrive);
+  function drive(bot, dx, dy, dist, speed, dt) {
     const desiredX = (dx / dist) * speed;
     const desiredY = (dy / dist) * speed;
-    const accel = 320 * dt;
+    const accel = 340 * dt;
     let sx = desiredX - bot.vx;
     let sy = desiredY - bot.vy;
     const sl = Math.hypot(sx, sy);
@@ -544,12 +550,119 @@
     }
     bot.vx += sx;
     bot.vy += sy;
-    const v = Math.hypot(bot.vx, bot.vy);
-    const cap = speed * 1.05;
-    if (v > cap) {
-      bot.vx = (bot.vx / v) * cap;
-      bot.vy = (bot.vy / v) * cap;
+    const velocity = Math.hypot(bot.vx, bot.vy);
+    if (velocity > speed * 1.05) {
+      bot.vx = (bot.vx / velocity) * speed;
+      bot.vy = (bot.vy / velocity) * speed;
     }
+  }
+
+  function cruise(bot, dt, time) {
+    if (!bot.wps.length) {
+      bot.dwell -= dt;
+      bot.vx *= Math.exp(-3 * dt);
+      bot.vy *= Math.exp(-3 * dt);
+      if (bot.dwell <= 0) chooseDestination(bot);
+      return;
+    }
+    const wp = bot.wps[0];
+    let dx = wp.x - bot.x;
+    let dy = wp.y - bot.y;
+    let dist = Math.hypot(dx, dy);
+    if (dist < 18) {
+      bot.wps.shift();
+      bot.best = Infinity;
+      bot.stuck = 0;
+      if (!bot.wps.length) bot.dwell = bot.mode === "pair" ? 0.3 : 0.18 + Math.random() * 0.4;
+      return;
+    }
+    if (dist < bot.best - 0.8) {
+      bot.best = dist;
+      bot.stuck = 0;
+    } else bot.stuck += dt;
+    if (bot.stuck > 1.45) {
+      chooseDestination(bot);
+      return;
+    }
+    if (dist > 50 && bot.mode === "roam") {
+      const wob = Math.sin(time * bot.freq + bot.phase) * bot.wobble;
+      const ox = dx;
+      const oy = dy;
+      dx = ox + (-oy / dist) * wob;
+      dy = oy + (ox / dist) * wob;
+      dist = Math.hypot(dx, dy) || 1;
+    }
+    const arrive = bot.wps.length === 1 ? Math.min(1, dist / 80) : 1;
+    drive(bot, dx, dy, dist, (bot.trip || bot.speed) * Math.max(0.32, arrive), dt);
+  }
+
+  function steerFollow(bot, dt) {
+    const lead = bot.partner;
+    if (!lead) return;
+    let lx = lead.vx;
+    let ly = lead.vy;
+    let speed = Math.hypot(lx, ly);
+    if (speed < 10) {
+      lx = Math.sin(lead.heading);
+      ly = -Math.cos(lead.heading);
+      speed = Math.hypot(lx, ly) || 1;
+    }
+    let tx = lead.x + (-ly / speed) * (SEPARATION + 12) * bot.sideSign;
+    let ty = lead.y + (lx / speed) * (SEPARATION + 12) * bot.sideSign;
+    if (!inWalkable(tx, ty)) {
+      tx = lead.x - (lx / speed) * (SEPARATION + 14);
+      ty = lead.y - (ly / speed) * (SEPARATION + 14);
+    }
+    if (!inWalkable(tx, ty)) {
+      tx = lead.x;
+      ty = lead.y;
+    }
+    const dx = tx - bot.x;
+    const dy = ty - bot.y;
+    drive(bot, dx, dy, Math.hypot(dx, dy) || 1, Math.max(40, Math.hypot(lead.vx, lead.vy), lead.speed * 0.9), dt);
+  }
+
+  function steer(bot, dt, time) {
+    if (bot.mode === "greet" || bot.mode === "cluster") {
+      bot.vx *= Math.exp(-7 * dt);
+      bot.vy *= Math.exp(-7 * dt);
+      return;
+    }
+    if (bot.mode === "seek") {
+      const other = bot.partner;
+      if (!other || (other.mode !== "roam" && other.mode !== "seek")) {
+        bot.mode = "roam";
+        bot.partner = null;
+        bot.cooldown = 1;
+        bot.wps = [];
+        bot.dwell = 0.05;
+        return;
+      }
+      if (Math.hypot(other.x - bot.x, other.y - bot.y) < 84) {
+        beginGreet(bot, other, time);
+        return;
+      }
+      bot.repath -= dt;
+      if (bot.repath <= 0 || !bot.wps.length) {
+        bot.repath = 0.4;
+        refreshSeek(bot);
+      }
+      cruise(bot, dt, time);
+      return;
+    }
+    if (bot.mode === "pair" && !bot.leader) {
+      steerFollow(bot, dt);
+      return;
+    }
+    if (bot.mode === "roam") {
+      const incoming = BOTS.find((other) => other.mode === "seek" && other.partner === bot);
+      if (incoming && Math.hypot(incoming.x - bot.x, incoming.y - bot.y) < 280) {
+        bot.vx *= Math.exp(-4.5 * dt);
+        bot.vy *= Math.exp(-4.5 * dt);
+        return;
+      }
+    }
+    cruise(bot, dt, time);
   }
 
   function move(bot, dt) {
@@ -564,21 +677,21 @@
     const yOk = inWalkable(bot.x, ny);
     if (xOk && !yOk) {
       bot.x = nx;
-      bot.vy = -bot.vy * 0.62;
+      bot.vy *= -0.62;
     } else if (yOk && !xOk) {
       bot.y = ny;
-      bot.vx = -bot.vx * 0.62;
+      bot.vx *= -0.62;
     } else if (xOk && yOk) {
       if (Math.abs(bot.vx) >= Math.abs(bot.vy)) {
         bot.x = nx;
-        bot.vy = -bot.vy * 0.62;
+        bot.vy *= -0.62;
       } else {
         bot.y = ny;
-        bot.vx = -bot.vx * 0.62;
+        bot.vx *= -0.62;
       }
     } else {
-      bot.vx = -bot.vx * 0.5;
-      bot.vy = -bot.vy * 0.5;
+      bot.vx *= -0.5;
+      bot.vy *= -0.5;
     }
   }
 
@@ -587,61 +700,60 @@
     let dy = b.y - a.y;
     let dist = Math.hypot(dx, dy);
     if (dist >= SEPARATION) return;
-    if (dist < 0.001) {
-      dx = 1;
-      dy = 0;
-      dist = 1;
-    }
+    if (dist < 0.001) { dx = 1; dy = 0; dist = 1; }
     const overlap = SEPARATION - dist;
     const nx = dx / dist;
     const ny = dy / dist;
-    const push = overlap * 0.5;
+    const push = overlap / 2;
     const ax = a.x - nx * push;
     const ay = a.y - ny * push;
     const bx = b.x + nx * push;
     const by = b.y + ny * push;
-    const aOk = inWalkable(ax, ay);
-    const bOk = inWalkable(bx, by);
-    if (aOk && bOk) {
-      a.x = ax;
-      a.y = ay;
-      b.x = bx;
-      b.y = by;
-    } else if (aOk) {
-      const full = inWalkable(a.x - nx * overlap, a.y - ny * overlap);
-      if (full) {
-        a.x -= nx * overlap;
-        a.y -= ny * overlap;
-      }
-    } else if (bOk) {
-      const full = inWalkable(b.x + nx * overlap, b.y + ny * overlap);
-      if (full) {
-        b.x += nx * overlap;
-        b.y += ny * overlap;
-      }
-    } else {
-      const tx = -ny;
-      const ty = nx;
-      if (inWalkable(a.x - tx * push, a.y - ty * push)) {
-        a.x -= tx * push;
-        a.y -= ty * push;
-      }
-      if (inWalkable(b.x + tx * push, b.y + ty * push)) {
-        b.x += tx * push;
-        b.y += ty * push;
-      }
+    if (inWalkable(ax, ay) && inWalkable(bx, by)) {
+      a.x = ax; a.y = ay; b.x = bx; b.y = by;
+    } else if (inWalkable(a.x - nx * overlap, a.y - ny * overlap)) {
+      a.x -= nx * overlap; a.y -= ny * overlap;
+    } else if (inWalkable(b.x + nx * overlap, b.y + ny * overlap)) {
+      b.x += nx * overlap; b.y += ny * overlap;
     }
     const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
     if (rel < 0) {
-      const impulse = rel * 0.55;
-      a.vx += nx * impulse;
-      a.vy += ny * impulse;
-      b.vx -= nx * impulse;
-      b.vy -= ny * impulse;
+      a.vx += nx * rel * 0.5;
+      a.vy += ny * rel * 0.5;
+      b.vx -= nx * rel * 0.5;
+      b.vy -= ny * rel * 0.5;
     }
   }
 
+  function lerpAngle(a, b, t) {
+    let d = b - a;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return a + d * t;
+  }
+
+  function faceToward(bot, tx, ty, maxLean, dt) {
+    let desired = Math.atan2(ty - bot.y, tx - bot.x) + Math.PI / 2;
+    while (desired > Math.PI) desired -= Math.PI * 2;
+    while (desired < -Math.PI) desired += Math.PI * 2;
+    desired = Math.max(-maxLean, Math.min(maxLean, desired));
+    bot.heading = lerpAngle(bot.heading, desired, 1 - Math.exp(-6.5 * dt));
+  }
+
   function step(dt, time) {
+    for (const bot of BOTS) if (bot.cooldown > 0) bot.cooldown -= dt;
+    socialDirector(time);
+    for (const bot of BOTS) if (bot.mode !== "roam" && bot.mode !== "seek") bot.modeTime -= dt;
+    for (const bot of BOTS) {
+      if (bot.mode !== "roam" && bot.mode !== "seek" && bot.modeTime <= 0) endSocial(bot, time);
+      if (bot.mode === "seek" && bot.modeTime <= 0) {
+        bot.mode = "roam";
+        bot.partner = null;
+        bot.cooldown = 1.1;
+        bot.wps = [];
+        bot.dwell = 0;
+      }
+    }
     for (const bot of BOTS) steer(bot, dt, time);
     for (const bot of BOTS) move(bot, dt);
     for (let n = 0; n < 4; n++) {
@@ -661,22 +773,21 @@
       }
       const zone = zoneAt(bot.x, bot.y);
       if (zone) bot.zone = zone;
-      const speed = Math.hypot(bot.vx, bot.vy);
-      if (speed > 12) {
-        let face = Math.atan2(bot.vy, bot.vx) + Math.PI / 2;
-        while (face > Math.PI) face -= Math.PI * 2;
-        while (face < -Math.PI) face += Math.PI * 2;
-        face = Math.max(-0.2, Math.min(0.2, face));
-        bot.heading = lerpAngle(bot.heading, face, 1 - Math.exp(-5.5 * dt));
+      if ((bot.mode === "greet" || bot.mode === "cluster") && (bot.partner || bot.extra)) {
+        const mates = [bot.partner, bot.extra].filter(Boolean);
+        const tx = mates.reduce((sum, mate) => sum + mate.x, 0) / mates.length;
+        const ty = mates.reduce((sum, mate) => sum + mate.y, 0) / mates.length;
+        faceToward(bot, tx, ty, 0.95, dt);
+        bot.pulse = 0.45 + 0.55 * Math.abs(Math.sin(time * 7));
+      } else {
+        bot.pulse *= Math.exp(-4 * dt);
+        const incoming = BOTS.find((other) => other.mode === "seek" && other.partner === bot);
+        const speed = Math.hypot(bot.vx, bot.vy);
+        if (incoming && Math.hypot(incoming.x - bot.x, incoming.y - bot.y) < 280) faceToward(bot, incoming.x, incoming.y, 0.8, dt);
+        else if (speed > 12) faceToward(bot, bot.x + bot.vx, bot.y + bot.vy, 0.24, dt);
       }
+      if (bot.mode === "seek") bot.modeTime -= dt;
     }
-  }
-
-  function lerpAngle(a, b, t) {
-    let d = b - a;
-    while (d > Math.PI) d -= Math.PI * 2;
-    while (d < -Math.PI) d += Math.PI * 2;
-    return a + d * t;
   }
 
   function resize() {
@@ -688,14 +799,13 @@
       canvas.width = w;
       canvas.height = h;
     }
-    const s = Math.min(w / WORLD_W, h / WORLD_H);
-    view.s = s;
-    view.x = (w - WORLD_W * s) / 2;
-    view.y = (h - WORLD_H * s) / 2;
+    view.s = Math.min(w / WORLD_W, h / WORLD_H);
+    view.x = (w - WORLD_W * view.s) / 2;
+    view.y = (h - WORLD_H * view.s) / 2;
   }
 
   function pathRound(x, y, w, h, r) {
-    const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+    const rr = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2));
     ctx.beginPath();
     ctx.moveTo(x + rr, y);
     ctx.arcTo(x + w, y, x + w, y + h, rr);
@@ -710,11 +820,6 @@
     ctx.stroke();
   }
 
-  function fillRound(x, y, w, h, r) {
-    pathRound(x, y, w, h, r);
-    ctx.fill();
-  }
-
   function line(x1, y1, x2, y2) {
     ctx.beginPath();
     ctx.moveTo(x1, y1);
@@ -722,266 +827,168 @@
     ctx.stroke();
   }
 
-  function circle(x, y, r) {
+  function gapsOn(start, end, doors, axis) {
+    const cuts = doors
+      .map((door) => (axis === "v" ? [door.y, door.y + door.h] : [door.x, door.x + door.w]))
+      .filter((cut) => cut[1] > start && cut[0] < end)
+      .map((cut) => [Math.max(start, cut[0]), Math.min(end, cut[1])])
+      .sort((a, b) => a[0] - b[0]);
+    const spans = [];
+    let cursor = start;
+    for (const cut of cuts) {
+      if (cut[0] > cursor) spans.push([cursor, cut[0]]);
+      cursor = Math.max(cursor, cut[1]);
+    }
+    if (cursor < end) spans.push([cursor, end]);
+    return spans;
+  }
+
+  function vWall(x, y0, y1, doors) {
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    for (const span of gapsOn(y0, y1, doors, "v")) {
+      ctx.moveTo(x, span[0]);
+      ctx.lineTo(x, span[1]);
+    }
     ctx.stroke();
   }
 
-  function floorOf(id) {
-    return id === "patio" ? PATIO : FLOOR;
+  function hWall(y, x0, x1, doors) {
+    ctx.beginPath();
+    for (const span of gapsOn(x0, x1, doors, "h")) {
+      ctx.moveTo(span[0], y);
+      ctx.lineTo(span[1], y);
+    }
+    ctx.stroke();
   }
 
-  function drawGrid(room, step, color) {
+  function drawWalls() {
+    ctx.save();
+    ctx.strokeStyle = "#e6ebf2";
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = "miter";
+    ctx.lineCap = "butt";
+    ctx.beginPath();
+    ctx.moveTo(X1, Y0);
+    ctx.lineTo(X2, Y0);
+    ctx.lineTo(X2, YW);
+    ctx.lineTo(X3, YW);
+    ctx.lineTo(X3, Y3);
+    ctx.lineTo(X0, Y3);
+    ctx.lineTo(X0, YW);
+    ctx.lineTo(X1, YW);
+    ctx.lineTo(X1, Y0);
+    ctx.closePath();
+    ctx.stroke();
+    vWall(X1, YW, Y3, DOORS.filter((door) => door.orient === "v" && door.x === X1));
+    vWall(X2, YW, Y3, DOORS.filter((door) => door.orient === "v" && door.x === X2));
+    vWall(XE, YM, YG, DOORS.filter((door) => door.orient === "v" && door.x === XE));
+    hWall(Y1, X1, X2, DOORS.filter((door) => door.orient === "h" && door.y === Y1));
+    hWall(YM, X0, X1, DOORS.filter((door) => door.orient === "h" && door.y === YM));
+    hWall(YG, X0, X1, DOORS.filter((door) => door.orient === "h" && door.y === YG));
+    hWall(YK, X2, X3, DOORS.filter((door) => door.orient === "h" && door.y === YK));
+    hWall(Y2, X1, X2, DOORS.filter((door) => door.orient === "h" && door.y === Y2));
+    ctx.restore();
+  }
+
+  function drawDeck() {
     ctx.save();
     ctx.beginPath();
-    ctx.rect(room.x, room.y, room.w, room.h);
+    ctx.rect(court.x, court.y, court.w, court.h);
     ctx.clip();
     ctx.beginPath();
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = "rgba(255,255,255,0.06)";
     ctx.lineWidth = 1;
-    const x0 = Math.ceil(room.x / step) * step;
-    const y0 = Math.ceil(room.y / step) * step;
-    for (let x = x0; x < room.x + room.w; x += step) {
-      ctx.moveTo(x, room.y);
-      ctx.lineTo(x, room.y + room.h);
+    for (let x = court.x; x <= court.x + court.w; x += 34) {
+      ctx.moveTo(x, court.y);
+      ctx.lineTo(x, court.y + court.h);
     }
-    for (let y = y0; y < room.y + room.h; y += step) {
-      ctx.moveTo(room.x, y);
-      ctx.lineTo(room.x + room.w, y);
+    for (let y = court.y; y <= court.y + court.h; y += 34) {
+      ctx.moveTo(court.x, y);
+      ctx.lineTo(court.x + court.w, y);
     }
     ctx.stroke();
     ctx.restore();
-  }
-
-  function drawDeck(room) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(room.x, room.y, room.w, room.h);
-    ctx.clip();
-    ctx.beginPath();
-    ctx.strokeStyle = "rgba(255,255,255,0.035)";
-    ctx.lineWidth = 1;
-    for (let y = room.y + 12; y < room.y + room.h; y += 16) {
-      ctx.moveTo(room.x, y);
-      ctx.lineTo(room.x + room.w, y);
-    }
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawDoorBridge(door) {
-    if (door.orient === "v") {
-      const mid = door.x + door.t / 2;
-      ctx.fillStyle = floorOf(door.a);
-      ctx.fillRect(door.x - 3, door.y, mid - (door.x - 3), door.h);
-      ctx.fillStyle = floorOf(door.b);
-      ctx.fillRect(mid, door.y, door.x + door.t + 3 - mid, door.h);
-    } else {
-      const mid = door.y + door.t / 2;
-      ctx.fillStyle = floorOf(door.a);
-      ctx.fillRect(door.x, door.y - 3, door.w, mid - (door.y - 3));
-      ctx.fillStyle = floorOf(door.b);
-      ctx.fillRect(door.x, mid, door.w, door.y + door.t + 3 - mid);
-    }
-  }
-
-  function drawDoorLeaf(door) {
-    ctx.save();
-    ctx.strokeStyle = "rgba(198, 208, 222, 0.55)";
-    ctx.lineWidth = 1.35;
-    if (door.slider) {
-      const y = door.y + door.t / 2;
-      ctx.setLineDash([8, 6]);
-      line(door.x + 10, y, door.x + door.w - 10, y);
-      ctx.setLineDash([]);
-      ctx.restore();
-      return;
-    }
-    if (door.opening) {
-      ctx.lineWidth = 1.4;
-      line(door.x, door.y - 10, door.x, door.y + door.t + 10);
-      line(door.x + door.w, door.y - 10, door.x + door.w, door.y + door.t + 10);
-      ctx.restore();
-      return;
-    }
-    const len = 62;
-    const intoWest = door.into === "bedroom" || door.into === "bathroom";
-    const hingeAtBottom = door.hinge === "end";
-    const hx = intoWest ? door.x - 1 : door.x + door.t + 1;
-    const hy = hingeAtBottom ? door.y + door.h : door.y;
-    const wallAngle = hingeAtBottom ? -Math.PI / 2 : Math.PI / 2;
-    const leafAngle = intoWest ? Math.PI : 0;
-    ctx.beginPath();
-    ctx.arc(hx, hy, len, wallAngle, leafAngle, intoWest === hingeAtBottom);
-    ctx.stroke();
-    line(hx, hy, hx + Math.cos(leafAngle) * len, hy + Math.sin(leafAngle) * len);
-    ctx.restore();
-  }
-
-  function drawWindow(x, y, w, h) {
-    ctx.fillStyle = "#1a2834";
-    ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = "rgba(176, 214, 226, 0.55)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-    ctx.beginPath();
-    if (w >= h) {
-      ctx.moveTo(x + w / 2, y);
-      ctx.lineTo(x + w / 2, y + h);
-    } else {
-      ctx.moveTo(x, y + h / 2);
-      ctx.lineTo(x + w, y + h / 2);
-    }
-    ctx.stroke();
-  }
-
-  function drawFence() {
-    ctx.save();
-    ctx.strokeStyle = "rgba(176, 186, 200, 0.28)";
-    ctx.lineWidth = 1;
-    const y0 = HOB;
-    const y1 = outer.y + outer.h;
-    const x0 = outer.x;
-    const x1 = outer.x + outer.w;
-    ctx.beginPath();
-    for (let y = y0; y < B; y += 16) {
-      ctx.moveTo(x0 + 3, y);
-      ctx.lineTo(x0 + 13, y);
-      ctx.moveTo(x1 - 13, y);
-      ctx.lineTo(x1 - 3, y);
-    }
-    for (let x = L; x < R; x += 16) {
-      ctx.moveTo(x, y1 - 13);
-      ctx.lineTo(x, y1 - 3);
-    }
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawFurniture() {
-    const bed = roomById.bedroom;
-    const bath = roomById.bathroom;
-    const hall = roomById.hall;
-    const liv = roomById.living;
-    const kit = roomById.kitchen;
-
-    ctx.save();
-    ctx.strokeStyle = LINE;
-    ctx.lineWidth = 1.6;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.fillStyle = "rgba(255,255,255,0.018)";
-
-    fillRound(bed.x + 78, bed.y + 168, 250, 150, 18);
-    strokeRound(bed.x + 78, bed.y + 168, 250, 150, 18);
-    strokeRound(bed.x + 124, bed.y + 28, 168, 214, 8);
-    ctx.lineWidth = 3.2;
-    strokeRound(bed.x + 124, bed.y + 28, 168, 18, 5);
-    ctx.lineWidth = 1.6;
-    strokeRound(bed.x + 140, bed.y + 54, 58, 34, 7);
-    strokeRound(bed.x + 214, bed.y + 54, 58, 34, 7);
-    line(bed.x + 124, bed.y + 132, bed.x + 292, bed.y + 132);
-    strokeRound(bed.x + 78, bed.y + 40, 34, 34, 4);
-    strokeRound(bed.x + 304, bed.y + 40, 34, 34, 4);
-    circle(bed.x + 95, bed.y + 57, 5);
-    circle(bed.x + 321, bed.y + 57, 5);
-
-    strokeRound(bath.x + 26, bath.y + 18, 236, 72, 22);
-    strokeRound(bath.x + 36, bath.y + 28, 216, 52, 16);
-    strokeRound(bath.x + 28, bath.y + 108, 46, 58, 14);
-    circle(bath.x + 51, bath.y + 132, 7);
-    strokeRound(bath.x + 24, bath.y + bath.h - 50, 210, 32, 4);
-    circle(bath.x + 78, bath.y + bath.h - 34, 9);
-    circle(bath.x + 148, bath.y + bath.h - 34, 9);
-    strokeRound(bath.x + 24, bath.y + bath.h - 62, 210, 8, 2);
-
-    fillRound(hall.x + hall.w / 2 - 16, hall.y + 36, 32, hall.h - 72, 16);
-    strokeRound(hall.x + hall.w / 2 - 16, hall.y + 36, 32, hall.h - 72, 16);
-
-    fillRound(liv.x + 150, liv.y + 78, 390, 210, 18);
-    strokeRound(liv.x + 150, liv.y + 78, 390, 210, 18);
-    strokeRound(liv.x + 250, liv.y + 18, 176, 12, 2);
-    strokeRound(liv.x + 230, liv.y + 36, 216, 20, 3);
-    strokeRound(liv.x + 120, liv.y + 248, 200, 64, 12);
-    strokeRound(liv.x + 120, liv.y + 248, 200, 18, 8);
-    line(liv.x + 186, liv.y + 266, liv.x + 186, liv.y + 312);
-    line(liv.x + 254, liv.y + 266, liv.x + 254, liv.y + 312);
-    strokeRound(liv.x + 250, liv.y + 150, 110, 52, 6);
-    strokeRound(liv.x + 78, liv.y + 250, 62, 62, 10);
-    circle(liv.x + liv.w - 48, liv.y + liv.h - 42, 16);
-    circle(liv.x + liv.w - 48, liv.y + liv.h - 42, 7);
-
-    strokeRound(kit.x + 18, kit.y + 16, 40, 72, 4);
-    strokeRound(kit.x + kit.w - 44, kit.y + 16, 28, kit.h - 62, 3);
-    const burnX = kit.x + kit.w - 30;
-    circle(burnX, kit.y + 40, 6);
-    circle(burnX, kit.y + 64, 6);
-    circle(burnX, kit.y + 88, 6);
-    circle(burnX, kit.y + 112, 6);
-    strokeRound(kit.x + 18, kit.y + kit.h - 40, 360, 24, 3);
-    circle(kit.x + 120, kit.y + kit.h - 28, 8);
-    strokeRound(kit.x + 210, kit.y + 78, 138, 62, 6);
-
-    const deckY = patio.y + patio.h / 2 - 16;
-    lounger(patio.x + 70, deckY - 46, 78, 34);
-    lounger(patio.x + 70, deckY + 28, 78, 34);
-    lounger(patio.x + patio.w - 150, deckY - 46, 78, 34);
-    lounger(patio.x + patio.w - 150, deckY + 28, 78, 34);
-    circle(patio.x + 196, patio.y + patio.h / 2, 16);
-    circle(patio.x + patio.w - 196, patio.y + patio.h / 2, 16);
-    strokeRound(patio.x + 28, patio.y + 22, 26, 26, 4);
-    strokeRound(patio.x + patio.w - 54, patio.y + 22, 26, 26, 4);
-    strokeRound(patio.x + 28, patio.y + patio.h - 48, 26, 26, 4);
-    strokeRound(patio.x + patio.w - 54, patio.y + patio.h - 48, 26, 26, 4);
-
-    ctx.restore();
-  }
-
-  function lounger(x, y, w, h) {
-    strokeRound(x, y, w, h, 7);
-    line(x + 8, y + 12, x + w - 8, y + 12);
   }
 
   function drawPool() {
     ctx.save();
-    ctx.fillStyle = "#145860";
-    fillRound(POOL.x, POOL.y, POOL.w, POOL.h, POOL.r);
-    ctx.strokeStyle = "rgba(132, 236, 224, 0.85)";
-    ctx.lineWidth = 2;
-    strokeRound(POOL.x, POOL.y, POOL.w, POOL.h, POOL.r);
-    ctx.strokeStyle = "rgba(188, 246, 238, 0.35)";
-    ctx.lineWidth = 1.25;
-    strokeRound(POOL.x + 8, POOL.y + 8, POOL.w - 16, POOL.h - 16, Math.max(8, POOL.r - 8));
-    ctx.strokeStyle = "rgba(188, 246, 238, 0.28)";
-    const midY = POOL.y + POOL.h / 2;
-    ctx.setLineDash([7, 8]);
-    line(POOL.x + 28, midY, POOL.x + POOL.w - 28, midY);
-    ctx.setLineDash([]);
-    ctx.strokeStyle = "rgba(232, 250, 248, 0.7)";
-    ctx.lineWidth = 1.4;
-    const lx = POOL.x + 16;
-    const ly = POOL.y + POOL.h / 2 - 14;
-    strokeRound(lx, ly, 12, 28, 2);
-    line(lx, ly + 8, lx + 12, ly + 8);
-    line(lx, ly + 14, lx + 12, ly + 14);
-    line(lx, ly + 20, lx + 12, ly + 20);
+    ctx.fillStyle = "#146068";
+    ctx.fillRect(POOL.x, POOL.y, POOL.w, POOL.h);
+    ctx.strokeStyle = "rgba(186, 220, 220, 0.75)";
+    ctx.lineWidth = 1.6;
+    ctx.strokeRect(POOL.x + 0.5, POOL.y + 0.5, POOL.w - 1, POOL.h - 1);
+    ctx.strokeStyle = "rgba(186, 220, 220, 0.28)";
+    ctx.strokeRect(POOL.x + 9.5, POOL.y + 9.5, POOL.w - 19, POOL.h - 19);
     ctx.restore();
   }
 
-  function drawLabel(text, x, y) {
+  function drawFurniture() {
+    const liv = roomById.living;
+    const master = roomById.master;
+    const guest = roomById.guest;
+    const ensuite = roomById.ensuite;
+    const bath = roomById.bath;
+    const kit = roomById.kitchen;
+    const study = roomById.study;
+    const lounge = roomById.lounge;
     ctx.save();
-    ctx.font = "600 13px Outfit, sans-serif";
-    ctx.fillStyle = LABEL;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    if ("letterSpacing" in ctx) ctx.letterSpacing = "0.22em";
-    ctx.fillText(text, x, y);
-    const width = Math.min(ctx.measureText(text).width, 180);
-    ctx.letterSpacing = "0px";
-    ctx.strokeStyle = "rgba(232, 236, 244, 0.32)";
-    ctx.lineWidth = 1;
-    line(x - Math.min(28, width / 2), y + 12, x + Math.min(28, width / 2), y + 12);
+    ctx.strokeStyle = "rgba(214, 220, 230, 0.8)";
+    ctx.lineWidth = 1.45;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+
+    strokeRound(liv.x + 118, liv.y + 34, 246, 50, 8);
+    strokeRound(liv.x + 136, liv.y + 42, 68, 20, 4);
+    strokeRound(liv.x + 220, liv.y + 42, 68, 20, 4);
+    strokeRound(liv.x + 150, liv.y + 118, 124, 56, 4);
+    strokeRound(liv.x + 138, liv.y + 206, 54, 48, 8);
+    strokeRound(liv.x + 262, liv.y + 206, 54, 48, 8);
+    strokeRound(liv.x + 604, liv.y + 72, 84, 156, 4);
+    for (let i = 0; i < 3; i++) {
+      strokeRound(liv.x + 576, liv.y + 88 + i * 46, 20, 20, 3);
+      strokeRound(liv.x + 696, liv.y + 88 + i * 46, 20, 20, 3);
+    }
+
+    const bedX = master.x + (master.w - 214) / 2;
+    const bedY = master.y + 78;
+    strokeRound(bedX, bedY, 214, 156, 6);
+    strokeRound(bedX + 18, bedY + 14, 78, 30, 5);
+    strokeRound(bedX + 116, bedY + 14, 78, 30, 5);
+    line(bedX, bedY + 74, bedX + 214, bedY + 74);
+    strokeRound(bedX - 40, bedY + 8, 30, 34, 3);
+    strokeRound(bedX + 224, bedY + 8, 30, 34, 3);
+
+    strokeRound(ensuite.x + 28, ensuite.y + 28, 78, 78, 6);
+    ctx.beginPath();
+    ctx.arc(ensuite.x + 67, ensuite.y + 67, 8, 0, Math.PI * 2);
+    ctx.stroke();
+
+    strokeRound(guest.x + 36, guest.y + 24, 100, 72, 5);
+    strokeRound(guest.x + 46, guest.y + 32, 34, 16, 3);
+    strokeRound(guest.x + 88, guest.y + 32, 34, 16, 3);
+
+    ctx.beginPath();
+    ctx.ellipse(bath.x + 108, bath.y + 118, 46, 68, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(bath.x + 108, bath.y + 118, 32, 52, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    strokeRound(bath.x + 190, bath.y + bath.h - 58, 150, 28, 3);
+    ctx.beginPath();
+    ctx.arc(bath.x + 250, bath.y + bath.h - 44, 8, 0, Math.PI * 2);
+    ctx.stroke();
+
+    strokeRound(kit.x + 16, kit.y + 16, kit.w - 34, 40, 3);
+    strokeRound(kit.x + kit.w - 50, kit.y + 16, 34, kit.h - 64, 3);
+    ctx.beginPath();
+    ctx.arc(kit.x + 118, kit.y + 36, 10, 0, Math.PI * 2);
+    ctx.stroke();
+
+    strokeRound(study.x + 148, study.y + 64, 76, 200, 4);
+    strokeRound(study.x + 104, study.y + 140, 34, 40, 4);
+    strokeRound(study.x + 64, study.y + study.h - 88, 250, 48, 10);
+
+    strokeRound(lounge.x + 210, lounge.y + lounge.h - 54, 400, 32, 6);
     ctx.restore();
   }
 
@@ -992,48 +999,7 @@
     };
     const a = parse(hex);
     const b = parse(target);
-    const c = a.map((channel, i) => Math.round(channel + (b[i] - channel) * t));
-    return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
-  }
-
-  function drawBot(bot) {
-    const r = BOT_R;
-    ctx.save();
-    ctx.translate(bot.x, bot.y + 3);
-    ctx.scale(1, 0.42);
-    ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 0.86, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-    ctx.translate(bot.x, bot.y);
-    ctx.rotate(bot.heading);
-    const body = ctx.createRadialGradient(-r * 0.38, -r * 0.42, r * 0.15, 0, 0, r);
-    body.addColorStop(0, mix(bot.color, "#ffffff", bot.name === "CHAOS" ? 0.35 : 0.2));
-    body.addColorStop(0.55, bot.color);
-    body.addColorStop(1, mix(bot.color, "#000000", bot.name === "CHAOS" ? 0.06 : 0.14));
-    ctx.fillStyle = body;
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.18)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    ctx.fillStyle = bot.eye;
-    capsule(-5.5, -3.4, 6.7, 16.2, 0.22);
-    capsule(5.5, -3.4, 6.7, 16.2, 0.22);
-
-    const pipR = r * 0.19;
-    const pipD = r + pipR * 0.55;
-    const pipA = 0.82;
-    ctx.fillStyle = bot.pip;
-    ctx.beginPath();
-    ctx.arc(Math.cos(pipA) * pipD, Math.sin(pipA) * pipD, pipR, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    return `rgb(${a.map((channel, i) => Math.round(channel + (b[i] - channel) * t)).join(",")})`;
   }
 
   function capsule(x, y, w, h, rot) {
@@ -1045,97 +1011,59 @@
     ctx.restore();
   }
 
-  function drawName(bot) {
+  function drawBot(bot) {
+    const r = BOT_R;
+    const scale = r / 22;
     ctx.save();
-    ctx.font = "600 12px Outfit, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const text = bot.name;
-    const width = ctx.measureText(text).width;
-    const x = bot.x;
-    const y = bot.y + BOT_R + 16;
-    ctx.fillStyle = "rgba(8, 10, 14, 0.62)";
-    fillRound(x - width / 2 - 6, y - 8, width + 12, 16, 8);
-    ctx.fillStyle = "#f4f6fb";
-    ctx.fillText(text, x, y);
+    ctx.translate(bot.x, bot.y);
+    ctx.rotate(bot.heading);
+    const body = ctx.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.1, 0, 0, r);
+    body.addColorStop(0, mix(bot.color, "#ffffff", bot.name === "CHAOS" ? 0.25 : 0.16));
+    body.addColorStop(0.6, bot.color);
+    body.addColorStop(1, mix(bot.color, "#000000", bot.name === "CHAOS" ? 0.05 : 0.1));
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = bot.eye;
+    capsule(-5.5 * scale, -3.2 * scale, 6.6 * scale, 15.4 * scale, 0.22);
+    capsule(5.5 * scale, -3.2 * scale, 6.6 * scale, 15.4 * scale, 0.22);
+    const pipR = r * 0.18 * (1 + bot.pulse * 0.16);
+    const pipD = r + pipR * 0.42;
+    const pipX = Math.cos(0.82) * pipD;
+    const pipY = Math.sin(0.82) * pipD;
+    if (bot.pulse > 0.08) {
+      ctx.save();
+      ctx.globalAlpha = 0.25 + bot.pulse * 0.6;
+      ctx.strokeStyle = bot.pip;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(pipX, pipY, pipR + 3 + bot.pulse * 5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.fillStyle = bot.pip;
+    ctx.beginPath();
+    ctx.arc(pipX, pipY, pipR, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
-  }
-
-  function drawHouse() {
-    ctx.fillStyle = WALL;
-    fillRound(outer.x, outer.y, outer.w, outer.h, 10);
-
-    for (const room of ROOMS) {
-      ctx.fillStyle = floorOf(room.id);
-      ctx.fillRect(room.x, room.y, room.w, room.h);
-    }
-
-    for (const room of ROOMS) {
-      if (room.id === "patio") drawDeck(room);
-      else drawGrid(room, 28, "rgba(255,255,255,0.038)");
-    }
-
-    ctx.strokeStyle = "rgba(214, 222, 234, 0.42)";
-    ctx.lineWidth = 1.5;
-    for (const room of ROOMS) {
-      ctx.strokeRect(room.x + 0.5, room.y + 0.5, room.w - 1, room.h - 1);
-    }
-
-    for (const door of DOORS) drawDoorBridge(door);
-
-    drawWindow(150, outer.y + 4, 150, 8);
-    drawWindow(860, outer.y + 4, 210, 8);
-    drawWindow(outer.x + 4, 470, 8, 78);
-    drawWindow(R + 4, 470, 8, 90);
-
-    drawFence();
-    drawFurniture();
-    drawPool();
-
-    ctx.save();
-    ctx.strokeStyle = LINE_SOFT;
-    ctx.lineWidth = 1.25;
-    for (const door of DOORS) drawDoorLeaf(door);
-    ctx.restore();
-
-    drawLabel("BEDROOM", roomById.bedroom.x + 250, roomById.bedroom.y + 300);
-    drawLabel("BATHROOM", roomById.bathroom.x + 168, roomById.bathroom.y + 196);
-    drawLabel("HALL", roomById.hall.x + roomById.hall.w / 2, roomById.hall.y + roomById.hall.h / 2);
-    drawLabel("LIVING ROOM", roomById.living.x + 500, roomById.living.y + 292);
-    drawLabel("KITCHEN", roomById.kitchen.x + 470, roomById.kitchen.y + 70);
-    drawLabel("OUTDOOR POOL", patio.x + patio.w / 2, POOL.y - 28);
   }
 
   function draw() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = BG;
+    ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(view.s, 0, 0, view.s, view.x, view.y);
-    drawHouse();
-    const ordered = BOTS.slice().sort((a, b) => a.y - b.y);
-    for (const bot of ordered) drawBot(bot);
-    for (const bot of ordered) drawName(bot);
-  }
-
-  function updateHud(now) {
-    if (now - hudAt < 180) return;
-    hudAt = now;
-    for (const bot of BOTS) {
-      const node = roomNodes[bot.name];
-      const room = roomById[bot.zone];
-      if (node && room && node.textContent !== room.short) node.textContent = room.short;
-    }
-    if (now - statusAt > 2800) {
-      statusAt = now;
-      statusNode.textContent = BOTS.map((bot) => {
-        const room = roomById[bot.zone];
-        return `${bot.name} is in the ${room ? room.short.toLowerCase() : "house"}`;
-      }).join(". ") + ".";
-    }
+    drawDeck();
+    drawPool();
+    drawFurniture();
+    drawWalls();
+    for (const bot of BOTS.slice().sort((a, b) => a.y - b.y)) drawBot(bot);
   }
 
   let last = performance.now();
   let simTime = 0;
+  let hudAt = 0;
 
   function frame(now) {
     const dt = Math.min(0.033, (now - last) / 1000);
@@ -1144,7 +1072,13 @@
     resize();
     step(dt, simTime);
     draw();
-    updateHud(now);
+    if (now - hudAt > 800) {
+      hudAt = now;
+      const social = BOTS.find((bot) => bot.partner && bot.mode !== "roam");
+      statusNode.textContent = social
+        ? `${social.name} ${social.mode === "pair" ? "walks with" : social.mode === "seek" ? "heads toward" : "meets"} ${social.partner.name}.`
+        : "Six units are roaming the courtyard house.";
+    }
     requestAnimationFrame(frame);
   }
 
@@ -1166,14 +1100,12 @@
   fullBtn.addEventListener("click", toggleFull);
   document.addEventListener("fullscreenchange", setFullIcon);
   window.addEventListener("keydown", (event) => {
-    if (event.key.toLowerCase() === "f" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+    if ((event.key === "f" || event.key === "F") && !event.metaKey && !event.ctrlKey && !event.altKey) {
       event.preventDefault();
       toggleFull();
     }
   });
-  window.addEventListener("resize", resize);
   new ResizeObserver(resize).observe(canvas);
-
   resize();
   requestAnimationFrame(frame);
 })();
